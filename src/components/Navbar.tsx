@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart, Menu, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,13 @@ import { AuthModal } from "./AuthModal";
 import { useRouter } from "next/navigation";
 
 export function Navbar() {
+    // --- Logo Configuration ---
+    const NAVBAR_LOGO_WIDTH = 120;
+    const NAVBAR_LOGO_HEIGHT = 40;
+    const NAVBAR_LOGO_CUSTOM_HEIGHT_CLASS = "h-12"; // Adjust this Tailwind class to scale visually
+    const NAVBAR_LOGO_ROUNDNESS = "rounded-xl"; // e.g., rounded-md, rounded-xl, rounded-full
+    // -------------------------
+
     const [isScrolled, setIsScrolled] = useState(false);
     const { items, isOpen, openCart, closeCart } = useCartStore();
     const { isAuthenticated } = useAuthStore();
@@ -40,10 +48,13 @@ export function Navbar() {
             >
                 <div className="container mx-auto px-4 max-w-5xl flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
-                        {/* We can add an image logo later */}
-                        <span className="text-2xl font-bold tracking-tight text-primary drop-shadow-sm">
-                            Filfora
-                        </span>
+                        <Image
+                            src="/assets/filfora_ghar_small.png"
+                            alt="Filfora Ghar Logo"
+                            width={NAVBAR_LOGO_WIDTH}
+                            height={NAVBAR_LOGO_HEIGHT}
+                            className={`object-cover w-auto overflow-hidden mix-blend-multiply dark:mix-blend-screen bg-white ${NAVBAR_LOGO_CUSTOM_HEIGHT_CLASS} ${NAVBAR_LOGO_ROUNDNESS}`}
+                        />
                     </Link>
 
                     {/* Desktop Nav */}

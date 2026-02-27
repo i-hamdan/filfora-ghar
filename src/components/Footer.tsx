@@ -1,13 +1,27 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
+    // --- Logo Configuration ---
+    const FOOTER_LOGO_WIDTH = 150;
+    const FOOTER_LOGO_HEIGHT = 50;
+    const FOOTER_LOGO_CUSTOM_HEIGHT_CLASS = "h-30"; // Adjust this Tailwind class to scale visually
+    const FOOTER_LOGO_ROUNDNESS = "rounded-xl"; // e.g., rounded-md, rounded-xl, rounded-full
+    // -------------------------
+
     return (
         <footer className="bg-zinc-900 text-zinc-400 py-12 mt-20">
             <div className="container mx-auto px-4 max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-4">Filfora Ghar</h3>
+                    <Image
+                        src="/assets/filfora_ghar_small.png"
+                        alt="Filfora Ghar Logo"
+                        width={FOOTER_LOGO_WIDTH}
+                        height={FOOTER_LOGO_HEIGHT}
+                        className={`object-contain mb-4 w-auto overflow-hidden opacity-90 ${FOOTER_LOGO_CUSTOM_HEIGHT_CLASS} ${FOOTER_LOGO_ROUNDNESS}`}
+                    />
                     <p className="text-sm leading-relaxed max-w-xs">
-                        Authentic, mouth-watering home-cooked meals by Asif Rasheed. Order today for a delightful experience tomorrow.
+                        Authentic, mouth-watering home-cooked meals by Chef Asif Rasheed. Order today for a delightful experience tomorrow.
                     </p>
                 </div>
                 <div>
