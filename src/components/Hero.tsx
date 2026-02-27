@@ -28,7 +28,7 @@ export function Hero() {
                     <span className="text-primary">Filfora Ghar</span>
                 </h1>
                 <p className="text-lg md:text-xl text-zinc-200 mb-10 max-w-2xl font-light drop-shadow-md">
-                    Experience the warmth of home-cooked meals by Asif Rasheed.
+                    Experience the warmth of home-cooked meals by Chef Asif Rasheed.
                     Rich flavors, premium ingredients, and a taste you will never forget.
                 </p>
                 <Link

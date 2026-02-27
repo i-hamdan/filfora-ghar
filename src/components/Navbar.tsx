@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import { CartDrawer } from "./CartDrawer";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -28,7 +29,7 @@ export function Navbar() {
             <header
                 className={cn(
                     "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-                    isScrolled ? "glass py-3" : "bg-transparent py-5"
+                    isScrolled ? "glass py-3 text-zinc-900 dark:text-zinc-100" : "bg-transparent py-5 text-zinc-900 dark:text-zinc-100"
                 )}
             >
                 <div className="container mx-auto px-4 max-w-5xl flex items-center justify-between">
@@ -50,7 +51,8 @@ export function Navbar() {
                     </nav>
 
                     {/* Icons */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <ThemeToggle />
                         <button
                             onClick={openCart}
                             className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors relative"
@@ -64,13 +66,10 @@ export function Navbar() {
                         </button>
                         <Link
                             href="/profile"
-                            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors hidden sm:block"
+                            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
                         >
                             <User className="w-5 h-5 drop-shadow-sm" />
                         </Link>
-                        <button className="p-2 md:hidden hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors">
-                            <Menu className="w-5 h-5 drop-shadow-sm" />
-                        </button>
                     </div>
                 </div>
             </header>
