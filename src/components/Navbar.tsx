@@ -5,13 +5,19 @@ import { ShoppingCart, Menu, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { CartDrawer } from "./CartDrawer";
 import { ThemeToggle } from "./ThemeToggle";
+import { AuthModal } from "./AuthModal";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const { items, isOpen, openCart, closeCart } = useCartStore();
+    const { isAuthenticated } = useAuthStore();
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
@@ -64,12 +70,21 @@ export function Navbar() {
                                 </span>
                             )}
                         </button>
-                        <Link
-                            href="/profile"
-                            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
-                        >
-                            <User className="w-5 h-5 drop-shadow-sm" />
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link
+                                href="/profile"
+                                className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <User className="w-5 h-5 drop-shadow-sm" />
+                            </Link>
+                        ) : (
+                            <button
+                                onClick={() => setIsAuthModalOpen(true)}
+                                className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <User className="w-5 h-5 drop-shadow-sm" />
+                            </button>
+                        )}
                     </div>
                 </div>
             </header>
@@ -77,6 +92,14 @@ export function Navbar() {
             <CartDrawer
                 isOpen={isOpen}
                 onClose={closeCart}
+            />
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={() => {
+                    setIsAuthModalOpen(false);
+                    router.push("/profile");
+                }}
             />
         </>
     );
