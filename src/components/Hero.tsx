@@ -1,39 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { siteConfig } from "@/lib/config";
 
 export function Hero() {
-    // --- Hero Logo Configuration ---
-    // Set to true to use the image logo, false to use the text logo
-    const USE_IMAGE_LOGO_IN_HERO = false;
-
     // Customize logo dimensions and appearance
     const HERO_LOGO_WIDTH = 280;
     const HERO_LOGO_HEIGHT = 80;
     const HERO_LOGO_CLASSES = "object-contain h-36 md:h-24 w-auto drop-shadow-xl mt-2";
-    // -------------------------------
-
-    // --- Hero Background Configuration ---
-    // Change this variable to toggle between different background styles:
-    // 1 = Original (Dark/Orange focus)
-    // 2 = Dark Moody (Cinematic, rustic wooden table, rich Mughlai colors)
-    // 3 = Bright Marble (Elegant, sunlit, clean marble table)
-    const HERO_BG_STYLE: 1 | 2 | 3 = 1;
-    // const HERO_BG_STYLE: 1 | 2 | 3 = 2;
-    // const HERO_BG_STYLE: 1 | 2 | 3 = 3;
 
     const bgImages = {
         1: "/hero-bg.png",
         2: "/assets/hero_bg_dark_moody.png",
         3: "/assets/hero_bg_bright_marble.png"
     };
-    // -----------------------------------
-
-    // --- Hero Text Color Configuration ---
-    // Change this variable (1-21) to select a different color for "Authentic Home Kitchen" and "Filfora Ghar"
-    // Option 1 is the default brand orange (text-primary)
-    // Options 2-21 are vibrant tailwind colors
-    const HERO_TEXT_COLOR: number = 7;
 
     const textColors: Record<number, string> = {
         1: "text-primary",       // Original Orange
@@ -60,15 +40,14 @@ export function Hero() {
     };
 
     // Safely get the selected color class or fallback to primary
-    const dynamicTextColor = textColors[HERO_TEXT_COLOR] || "text-primary";
-    // -------------------------------------
+    const dynamicTextColor = textColors[siteConfig.HERO_TEXT_COLOR] || "text-primary";
 
     return (
         <section className="relative h-[85vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0 w-full h-full z-0">
                 <Image
-                    src={bgImages[HERO_BG_STYLE]}
+                    src={bgImages[siteConfig.HERO_BG_STYLE]}
                     alt="Filfora Ghar Signature Dishes"
                     fill
                     className="object-cover object-center scale-105 animate-slow-zoom"
@@ -83,7 +62,7 @@ export function Hero() {
                 <span className={`font-semibold tracking-wider uppercase text-sm mb-4 drop-shadow-md ${dynamicTextColor}`}>
                     Authentic Home Kitchen
                 </span>
-                {USE_IMAGE_LOGO_IN_HERO ? (
+                {siteConfig.USE_IMAGE_LOGO_IN_HERO ? (
                     <div className="flex flex-col items-center mb-6">
                         <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight drop-shadow-lg">
                             Welcome to

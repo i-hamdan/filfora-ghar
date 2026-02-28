@@ -2,7 +2,21 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Home, ShoppingBag, User } from "lucide-react";
+import { siteConfig } from "@/lib/config";
+import {
+    Home, ShoppingBag, User,
+    Store, ShoppingCart, UserCircle,
+    LayoutGrid, Package, UserRound,
+    Tent, ShoppingBasket, Smile,
+    Building2, Archive, Contact,
+    Circle, Square, Triangle,
+    MapPin, Gift, Heart,
+    ChefHat, Utensils, UserCheck,
+    Compass, Wallet, Fingerprint,
+    Map as MapIcon, Ticket, Sun,
+    Coffee, CreditCard, Sparkles,
+    Hexagon, Box
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,25 +33,60 @@ export function MobileBottomNav() {
     // Calculate total cart items
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
+    // Select Icons based on Central Config Theme
+    type IconThemeType = "outline" | "filled" | "dynamic";
+    const iconSets: Record<number, { home: any, cart: any, profile: any, type: IconThemeType }> = {
+        // Outline Themes
+        1: { home: Home, cart: ShoppingBag, profile: User, type: "outline" },
+        2: { home: Store, cart: ShoppingCart, profile: UserCircle, type: "outline" },
+        3: { home: LayoutGrid, cart: Package, profile: UserRound, type: "outline" },
+        4: { home: Tent, cart: ShoppingBasket, profile: Smile, type: "outline" },
+        5: { home: Building2, cart: Archive, profile: Contact, type: "outline" },
+
+        // Filled Themes
+        6: { home: Home, cart: ShoppingBag, profile: User, type: "filled" },
+        7: { home: Store, cart: ShoppingCart, profile: UserCircle, type: "filled" },
+        8: { home: LayoutGrid, cart: Package, profile: UserRound, type: "filled" },
+        9: { home: Circle, cart: Square, profile: Triangle, type: "filled" },
+        10: { home: MapPin, cart: Gift, profile: Heart, type: "filled" },
+
+        // Dynamic Themes (Outline when inactive, Filled when active)
+        11: { home: Home, cart: ShoppingBag, profile: User, type: "dynamic" },
+        12: { home: Store, cart: ShoppingCart, profile: UserCircle, type: "dynamic" },
+        13: { home: LayoutGrid, cart: Package, profile: UserRound, type: "dynamic" },
+        14: { home: Tent, cart: ShoppingBasket, profile: Smile, type: "dynamic" },
+        15: { home: Building2, cart: Archive, profile: Contact, type: "dynamic" },
+
+        // Creative Dynamic Themes
+        16: { home: ChefHat, cart: Utensils, profile: UserCheck, type: "dynamic" },
+        17: { home: Compass, cart: Wallet, profile: Fingerprint, type: "dynamic" },
+        18: { home: MapIcon, cart: Ticket, profile: Sun, type: "dynamic" },
+        19: { home: Coffee, cart: CreditCard, profile: Sparkles, type: "dynamic" },
+        20: { home: Hexagon, cart: Box, profile: Triangle, type: "dynamic" },
+    };
+
+    const themeConfig = iconSets[siteConfig.BOTTOM_NAV_ICON_THEME as keyof typeof iconSets] || iconSets[11];
+    const icons = themeConfig;
+
     const navItems = [
         {
             id: 'home',
             label: 'Order',
-            icon: Home,
+            icon: icons.home,
             path: '/',
             action: () => router.push('/'),
         },
         {
             id: 'cart',
             label: 'Cart',
-            icon: ShoppingBag,
+            icon: icons.cart,
             action: openCart,
             badge: count > 0 ? count : null,
         },
         {
             id: 'profile',
             label: 'Profile',
-            icon: User,
+            icon: icons.profile,
             path: '/profile',
             action: () => {
                 if (isAuthenticated) {
@@ -73,6 +122,7 @@ export function MobileBottomNav() {
                                         isActive && "scale-110"
                                     )}
                                         strokeWidth={isActive ? 2.5 : 2}
+                                        fill={(themeConfig.type === "filled" || (themeConfig.type === "dynamic" && isActive)) ? "currentColor" : "none"}
                                     />
 
                                     {/* Animated Cart Badge */}

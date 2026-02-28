@@ -4,10 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-
-// --- Global Font Configuration ---
-// Toggle between 1-20 to change the font family across the entire app
-const ACTIVE_FONT_INDEX: number = 1; // Change this number to test different fonts
+import { siteConfig } from "@/lib/config";
 
 const googleFonts = [
   { id: 1, name: "Outfit", url: "Outfit:wght@300;400;500;600;700" },
@@ -32,7 +29,7 @@ const googleFonts = [
   { id: 20, name: "Righteous", url: "Righteous" }
 ];
 
-const selectedFont = googleFonts.find(f => f.id === ACTIVE_FONT_INDEX) || googleFonts[0];
+const selectedFont = googleFonts.find(f => f.id === siteConfig.ACTIVE_FONT_INDEX) || googleFonts[0];
 // ---------------------------------
 
 export const metadata: Metadata = {

@@ -31,7 +31,7 @@ export function FloatingCartBar() {
                     initial={{ y: 150, opacity: 0, x: "-50%" }}
                     animate={{ y: 0, opacity: 1, x: "-50%" }}
                     exit={{ y: 150, opacity: 0, x: "-50%" }}
-                    className="hidden md:flex fixed bottom-6 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md bg-zinc-900/95 dark:bg-white/95 backdrop-blur-md rounded-[1.25rem] p-3 shadow-2xl border border-zinc-800/50 dark:border-zinc-200/50 text-white dark:text-zinc-900 items-center justify-between"
+                    className="flex fixed bottom-28 md:bottom-6 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md bg-zinc-900/95 dark:bg-white/95 backdrop-blur-md rounded-[1.25rem] p-3 shadow-2xl border border-zinc-800/50 dark:border-zinc-200/50 text-white dark:text-zinc-900 items-center justify-between"
                 >
                     <div className="flex items-center gap-3 pl-2">
                         <div className="bg-white/10 dark:bg-black/5 w-10 h-10 rounded-full flex items-center justify-center relative shadow-inner">
