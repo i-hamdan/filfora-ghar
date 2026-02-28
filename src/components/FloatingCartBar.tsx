@@ -4,10 +4,12 @@ import { useCartStore } from "@/store/useCartStore";
 import { sampleMenuItems } from "@/lib/data";
 import { ShoppingBag, Trash2, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function FloatingCartBar() {
-    const { items, clearCart, openCart } = useCartStore();
+    const { items, clearCart } = useCartStore();
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -64,7 +66,7 @@ export function FloatingCartBar() {
                             <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                         </button>
                         <button
-                            onClick={openCart}
+                            onClick={() => router.push('/cart')}
                             className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-1 hover:pr-4 group"
                         >
                             View Cart <ChevronRight className="w-4 h-4 -mr-1 group-hover:translate-x-1 transition-transform" />

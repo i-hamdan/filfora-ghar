@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { CartDrawer } from "./CartDrawer";
 import { ThemeToggle } from "./ThemeToggle";
 import { AuthModal } from "./AuthModal";
 import { useRouter } from "next/navigation";
@@ -21,7 +20,7 @@ export function Navbar() {
     // -------------------------
 
     const [isScrolled, setIsScrolled] = useState(false);
-    const { items, isOpen, openCart, closeCart } = useCartStore();
+    const { items } = useCartStore();
     const { isAuthenticated } = useAuthStore();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -74,7 +73,7 @@ export function Navbar() {
                         <div className="hidden md:flex items-center gap-2 sm:gap-4">
                             {/* Cart Button */}
                             <button
-                                onClick={openCart}
+                                onClick={() => router.push('/cart')}
                                 className="relative p-2 sm:p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all hover:scale-105 active:scale-95"
                                 aria-label="Open Cart"
                             >
@@ -107,10 +106,6 @@ export function Navbar() {
                 </div>
             </header>
 
-            <CartDrawer
-                isOpen={isOpen}
-                onClose={closeCart}
-            />
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
