@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -146,6 +146,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                 </div>
                                             </div>
                                         ))}
+
+                                        <div className="pt-2">
+                                            <button
+                                                onClick={onClose}
+                                                className="w-full py-4 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-600 dark:text-zinc-400 font-semibold flex items-center justify-center gap-2 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors duration-300"
+                                            >
+                                                <PlusCircle className="w-5 h-5" />
+                                                Add more items
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>

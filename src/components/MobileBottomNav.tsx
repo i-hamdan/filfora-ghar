@@ -58,7 +58,7 @@ export function MobileBottomNav() {
         15: { home: Building2, cart: Archive, profile: Contact, type: "dynamic" },
 
         // Creative Dynamic Themes
-        16: { home: ChefHat, cart: Utensils, profile: UserCheck, type: "dynamic" },
+        16: { home: ChefHat, cart: Utensils, profile: User, type: "dynamic" },
         17: { home: Compass, cart: Wallet, profile: Fingerprint, type: "dynamic" },
         18: { home: MapIcon, cart: Ticket, profile: Sun, type: "dynamic" },
         19: { home: Coffee, cart: CreditCard, profile: Sparkles, type: "dynamic" },
