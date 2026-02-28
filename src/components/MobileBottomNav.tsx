@@ -26,7 +26,7 @@ import { AuthModal } from "./AuthModal";
 export function MobileBottomNav() {
     const pathname = usePathname();
     const router = useRouter();
-    const { items, openCart } = useCartStore();
+    const { items } = useCartStore();
     const { isAuthenticated } = useAuthStore();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
