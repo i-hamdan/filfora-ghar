@@ -75,5 +75,5 @@ export const siteConfig = {
     // 18: Vacation Dynamic         (Map, Ticket, Sun)
     // 19: Cafe Dynamic             (Coffee, CreditCard, Sparkles)
     // 20: Geometry Dynamic         (Hexagon, Box, Triangle)
-    BOTTOM_NAV_ICON_THEME: 13 as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20,
+    BOTTOM_NAV_ICON_THEME: 16 as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20,
 };
