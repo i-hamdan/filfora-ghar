@@ -40,7 +40,7 @@ export default function CartPage() {
     };
 
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-950 pb-24 md:pb-8">
+        <div className="flex flex-col bg-white dark:bg-zinc-950 pb-6 md:pb-8">
             {/* Header */}
             <div className="pt-24 pb-4 px-4 md:px-8 border-b border-zinc-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">

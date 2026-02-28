@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
     // --- Logo Configuration ---
@@ -8,6 +11,12 @@ export function Footer() {
     const FOOTER_LOGO_CUSTOM_HEIGHT_CLASS = "h-30"; // Adjust this Tailwind class to scale visually
     const FOOTER_LOGO_ROUNDNESS = "rounded-xl"; // e.g., rounded-md, rounded-xl, rounded-full
     // -------------------------
+
+    const pathname = usePathname();
+
+    if (pathname.startsWith('/cart') || pathname.startsWith('/checkout')) {
+        return null;
+    }
 
     return (
         <footer className="bg-zinc-900 text-zinc-400 py-12 mt-20">
