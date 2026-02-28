@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 // --- Global Font Configuration ---
 // Toggle between 1-20 to change the font family across the entire app
@@ -62,10 +63,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          <main className="flex-1">
+          <main className="flex-1 pb-[6rem] md:pb-0">
             {children}
           </main>
           <Footer />
+          <MobileBottomNav />
         </ThemeProvider>
       </body>
     </html>

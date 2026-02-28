@@ -70,32 +70,39 @@ export function Navbar() {
                     {/* Icons */}
                     <div className="flex items-center gap-2 sm:gap-4">
                         <ThemeToggle />
-                        <button
-                            onClick={openCart}
-                            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors relative"
-                        >
-                            <ShoppingCart className="w-5 h-5 drop-shadow-sm" />
-                            {mounted && cartItemsCount > 0 && (
-                                <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                                    {cartItemsCount}
-                                </span>
-                            )}
-                        </button>
-                        {isAuthenticated ? (
-                            <Link
-                                href="/profile"
-                                className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
-                            >
-                                <User className="w-5 h-5 drop-shadow-sm" />
-                            </Link>
-                        ) : (
+
+                        <div className="hidden md:flex items-center gap-2 sm:gap-4">
+                            {/* Cart Button */}
                             <button
-                                onClick={() => setIsAuthModalOpen(true)}
-                                className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                                onClick={openCart}
+                                className="relative p-2 sm:p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all hover:scale-105 active:scale-95"
+                                aria-label="Open Cart"
                             >
-                                <User className="w-5 h-5 drop-shadow-sm" />
+                                <ShoppingCart className="w-5 h-5 sm:w-5 sm:h-5" />
+                                {cartItemsCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-background">
+                                        {cartItemsCount}
+                                    </span>
+                                )}
                             </button>
-                        )}
+
+                            {/* Profile Button */}
+                            {isAuthenticated ? (
+                                <Link
+                                    href="/profile"
+                                    className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <User className="w-5 h-5 drop-shadow-sm" />
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAuthModalOpen(true)}
+                                    className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <User className="w-5 h-5 drop-shadow-sm" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>

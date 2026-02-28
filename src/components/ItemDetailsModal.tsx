@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -23,10 +23,14 @@ interface ItemDetailsModalProps {
 
 export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDetailsModalProps) {
     const [quantity, setQuantity] = useState(1);
+    const [isAdded, setIsAdded] = useState(false);
 
-    // Reset quantity when new item is opened
+    // Reset quantity and state when new item is opened
     useEffect(() => {
-        if (isOpen) setQuantity(1);
+        if (isOpen) {
+            setQuantity(1);
+            setIsAdded(false);
+        }
     }, [isOpen]);
 
     // Lock body scroll when modal is open
@@ -45,7 +49,11 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
 
     const handleAdd = () => {
         onAddToCart(item.id, quantity);
-        onClose();
+        setIsAdded(true);
+        setTimeout(() => {
+            setIsAdded(false);
+            onClose();
+        }, 800);
     };
 
     return (
@@ -145,18 +153,37 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
                                 </div>
 
                                 {/* Add to Cart Button */}
-                                <button
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={handleAdd}
-                                    className="w-full flex items-center justify-between bg-primary hover:bg-primary-dark text-white px-6 py-4 rounded-2xl font-semibold transition-all shadow-[0_4_14_0_rgba(249,115,22,0.39)] hover:shadow-[0_6_20_rgba(249,115,22,0.23)] hover:-translate-y-0.5"
+                                    disabled={isAdded}
+                                    className={cn(
+                                        "w-full flex items-center justify-between px-6 py-4 rounded-2xl font-semibold transition-all relative overflow-hidden",
+                                        isAdded
+                                            ? "bg-green-500 hover:bg-green-600 text-white shadow-lg"
+                                            : "bg-primary hover:bg-primary-dark text-white shadow-[0_4_14_0_rgba(249,115,22,0.39)] hover:shadow-[0_6_20_rgba(249,115,22,0.23)] hover:-translate-y-0.5"
+                                    )}
                                 >
-                                    <span className="flex items-center gap-2">
-                                        <ShoppingBag className="w-5 h-5" />
-                                        Add item
-                                    </span>
-                                    <span>
-                                        ₹{item.price * quantity}
-                                    </span>
-                                </button>
+                                    {isAdded ? (
+                                        <motion.div
+                                            initial={{ scale: 0, rotate: -45 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            className="flex items-center justify-center w-full gap-2 text-lg"
+                                        >
+                                            <Check className="w-6 h-6" /> Added to Cart!
+                                        </motion.div>
+                                    ) : (
+                                        <>
+                                            <span className="flex items-center gap-2">
+                                                <ShoppingBag className="w-5 h-5" />
+                                                Add item
+                                            </span>
+                                            <span>
+                                                ₹{item.price * quantity}
+                                            </span>
+                                        </>
+                                    )}
+                                </motion.button>
                             </div>
 
                         </motion.div>

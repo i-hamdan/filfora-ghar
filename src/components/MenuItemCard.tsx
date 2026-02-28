@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface MenuItemCardProps {
@@ -16,6 +18,23 @@ interface MenuItemCardProps {
 }
 
 export function MenuItemCard({ item, onAdd, onClick }: MenuItemCardProps) {
+    const [isAdded, setIsAdded] = useState(false);
+
+    // Cleanup timeout if component unmounts
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        if (isAdded) {
+            timeout = setTimeout(() => setIsAdded(false), 800);
+        }
+        return () => clearTimeout(timeout);
+    }, [isAdded]);
+
+    const handleAddClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onAdd(item.id);
+        setIsAdded(true);
+    };
+
     return (
         <div
             className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-zinc-100 dark:border-zinc-800 cursor-pointer transform hover:-translate-y-1"
@@ -56,16 +75,32 @@ export function MenuItemCard({ item, onAdd, onClick }: MenuItemCardProps) {
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-6 flex-grow">
                     {item.description}
                 </p>
-                <div className="mt-auto">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAdd(item.id);
-                        }}
-                        className="w-full py-3 px-4 bg-zinc-100 hover:bg-primary hover:text-white dark:bg-zinc-800 dark:hover:bg-primary text-zinc-900 dark:text-zinc-100 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors duration-300"
+                <div className="mt-auto relative">
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.1 }}
+                        onClick={handleAddClick}
+                        className={cn(
+                            "w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors duration-300 relative overflow-hidden",
+                            isAdded
+                                ? "bg-green-500 text-white hover:bg-green-600"
+                                : "bg-zinc-100 hover:bg-primary hover:text-white dark:bg-zinc-800 dark:hover:bg-primary text-zinc-900 dark:text-zinc-100"
+                        )}
                     >
-                        <Plus className="w-5 h-5" /> Add to Cart
-                    </button>
+                        {isAdded ? (
+                            <motion.div
+                                initial={{ scale: 0, rotate: -45 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                className="flex items-center gap-2"
+                            >
+                                <Check className="w-5 h-5" /> Added!
+                            </motion.div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Plus className="w-5 h-5" /> Add to Cart
+                            </div>
+                        )}
+                    </motion.button>
                 </div>
             </div>
         </div>
