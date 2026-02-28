@@ -80,7 +80,8 @@ export function MobileBottomNav() {
             id: 'cart',
             label: 'Cart',
             icon: icons.cart,
-            action: openCart,
+            path: '/cart',
+            action: () => router.push('/cart'),
             badge: count > 0 ? count : null,
         },
         {

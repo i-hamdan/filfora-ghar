@@ -102,7 +102,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                             <ShoppingBag className="w-12 h-12 text-zinc-300 dark:text-zinc-600" />
                                         </div>
                                         <p className="font-medium text-lg">Your cart is empty</p>
-                                        <button onClick={() => { onClose(); router.push('/'); }} className="text-primary font-medium hover:underline">
+                                        <button onClick={() => { onClose(); router.push('/#menu'); }} className="text-primary font-medium hover:underline">
                                             Browse our menu
                                         </button>
                                     </div>
@@ -149,7 +149,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                                         <div className="pt-2">
                                             <button
-                                                onClick={() => { onClose(); router.push('/'); }}
+                                                onClick={() => { onClose(); router.push('/#menu'); }}
                                                 className="w-full py-4 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-600 dark:text-zinc-400 font-semibold flex items-center justify-center gap-2 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors duration-300"
                                             >
                                                 <PlusCircle className="w-5 h-5" />
