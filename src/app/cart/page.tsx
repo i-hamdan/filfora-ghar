@@ -2,7 +2,6 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { sampleMenuItems } from "@/lib/data";
 import { Minus, Plus, ShoppingBag, Trash2, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -22,12 +21,7 @@ export default function CartPage() {
 
     if (!mounted) return null;
 
-    const cartItemsWithDetails = items.map(item => {
-        const details = sampleMenuItems.find(i => i.id === item.id);
-        return { ...item, ...details };
-    }).filter((item): item is (typeof item & { price: number; name: string; image_url: string; id: string }) => !!item.price);
-
-    const subtotal = cartItemsWithDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = 50; // Mock delivery fee
     const total = subtotal > 0 ? subtotal + deliveryFee : 0;
 
@@ -53,7 +47,7 @@ export default function CartPage() {
 
             {/* Cart Content */}
             <div className="flex-grow w-full max-w-4xl mx-auto px-4 md:px-8 py-8">
-                {cartItemsWithDetails.length === 0 ? (
+                {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-[50vh] text-zinc-500 gap-6">
                         <div className="w-32 h-32 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center shadow-inner">
                             <ShoppingBag className="w-16 h-16 text-zinc-300 dark:text-zinc-600" />
@@ -73,7 +67,7 @@ export default function CartPage() {
                     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                         {/* Items List */}
                         <div className="flex-grow flex flex-col gap-3">
-                            {cartItemsWithDetails.map(item => (
+                            {items.map(item => (
                                 <div key={item.id} className="flex gap-4 p-3 md:p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 items-center transition-all hover:shadow-md">
                                     <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-black/5 dark:border-white/5">
                                         <Image src={item.image_url} alt={item.name} fill className="object-cover" />

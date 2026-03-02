@@ -13,7 +13,7 @@ interface MenuItemCardProps {
         image_url: string;
         dietary_tags: string[];
     };
-    onAdd: (id: string) => void;
+    onAdd: (item: any) => void;
     onClick: (id: string) => void;
 }
 
@@ -31,7 +31,7 @@ export function MenuItemCard({ item, onAdd, onClick }: MenuItemCardProps) {
 
     const handleAddClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        onAdd(item.id);
+        onAdd(item);
         setIsAdded(true);
     };
 

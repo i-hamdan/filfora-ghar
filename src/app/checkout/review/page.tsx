@@ -2,7 +2,7 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
-import { sampleMenuItems } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 import { ChevronLeft, Receipt, CheckCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,8 +11,8 @@ import Image from "next/image";
 
 export default function ReviewOrderPage() {
     const router = useRouter();
-    const { isAuthenticated } = useAuthStore();
-    const { items, clearCart } = useCartStore();
+    const { user, isAuthenticated } = useAuthStore();
+    const { items, checkoutDetails, clearCart } = useCartStore();
     const [mounted, setMounted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -28,22 +28,57 @@ export default function ReviewOrderPage() {
 
     if (!mounted || !isAuthenticated || items.length === 0) return null;
 
-    const cartItemsWithDetails = items.map(item => {
-        const details = sampleMenuItems.find(i => i.id === item.id);
-        return { ...item, ...details };
-    }).filter((item): item is (typeof item & { price: number; name: string; image_url: string; id: string }) => !!item.price);
-
-    const subtotal = cartItemsWithDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = 50;
     const total = subtotal + deliveryFee;
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
+        if (!user || !checkoutDetails.addressId || !checkoutDetails.date) {
+            alert("Missing checkout details. Please go back and select a delivery address and date.");
+            return;
+        }
+
         setIsProcessing(true);
-        // MOCK ORDER PROCESSING
-        setTimeout(() => {
+
+        try {
+            // 1. Create the Order
+            const { data: order, error: orderError } = await supabase.from('orders').insert({
+                user_id: user.id,
+                address_id: checkoutDetails.addressId,
+                total_amount: total,
+                status: 'pending'
+            }).select().single();
+
+            if (orderError) throw orderError;
+
+            // 2. Create the Order Items
+            const orderItems = items.map(item => ({
+                order_id: order.id,
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                price_at_time_of_order: item.price
+            }));
+
+            const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+
+            if (itemsError) {
+                // Rollback
+                await supabase.from('orders').delete().eq('id', order.id);
+                throw itemsError;
+            }
+
+            // 3. Trigger WhatsApp Order Confirmation
+            supabase.functions.invoke('send-order-confirmation', {
+                body: { order_id: order.id, phone: user.phone }
+            }).catch(err => console.error("Failed to trigger WhatsApp confirmation:", err));
+
             clearCart();
             router.push("/checkout/success");
-        }, 2000);
+        } catch (err: any) {
+            console.error("Checkout failed:", err);
+            alert("Checkout failed. Please try again.");
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -68,7 +103,7 @@ export default function ReviewOrderPage() {
                     </div>
 
                     <div className="space-y-4">
-                        {cartItemsWithDetails.map(item => (
+                        {items.map(item => (
                             <div key={item.id} className="flex justify-between items-start">
                                 <div className="flex gap-4">
                                     <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-100 dark:bg-zinc-800">

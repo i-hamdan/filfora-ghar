@@ -17,8 +17,9 @@ interface ItemDetailsModalProps {
         image_url: string;
         dietary_tags: string[];
         spice_level: string;
+        category?: string;
     } | null;
-    onAddToCart: (id: string, quantity: number) => void;
+    onAddToCart: (item: any, quantity: number) => void;
 }
 
 export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDetailsModalProps) {
@@ -47,13 +48,15 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
 
     if (!item) return null;
 
-    const handleAdd = () => {
-        onAddToCart(item.id, quantity);
-        setIsAdded(true);
-        setTimeout(() => {
-            setIsAdded(false);
-            onClose();
-        }, 800);
+    const handleAddToCart = () => {
+        if (item) {
+            onAddToCart(item, quantity);
+            setIsAdded(true);
+            setTimeout(() => {
+                setIsAdded(false);
+                onClose();
+            }, 800);
+        }
     };
 
     return (
@@ -155,7 +158,7 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
                                 {/* Add to Cart Button */}
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={handleAdd}
+                                    onClick={handleAddToCart}
                                     disabled={isAdded}
                                     className={cn(
                                         "w-full flex items-center justify-between px-6 py-4 rounded-2xl font-semibold transition-all relative overflow-hidden",

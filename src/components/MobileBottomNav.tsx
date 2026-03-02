@@ -25,6 +25,11 @@ import { AuthModal } from "./AuthModal";
 
 export function MobileBottomNav() {
     const pathname = usePathname();
+
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
+
     const router = useRouter();
     const { items } = useCartStore();
     const { isAuthenticated } = useAuthStore();

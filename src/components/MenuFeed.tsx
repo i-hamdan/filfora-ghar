@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { MenuItemCard } from "./MenuItemCard";
 import { ItemDetailsModal } from "./ItemDetailsModal";
-import { categories, sampleMenuItems } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 
@@ -21,6 +21,33 @@ export function MenuFeed() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const dietaryRef = useRef<HTMLDivElement>(null);
 
+    const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
+    const [menuItems, setMenuItems] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchMenu() {
+            setIsLoading(true);
+            const [catsRes, itemsRes] = await Promise.all([
+                supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
+                supabase.from('menu_items').select('*, categories(name)').eq('is_available', true).order('sort_order', { ascending: true })
+            ]);
+
+            if (catsRes.data) setCategories(catsRes.data);
+            if (itemsRes.data) {
+                const mappedItems = itemsRes.data.map(item => ({
+                    ...item,
+                    category: item.categories?.name || 'Uncategorized',
+                    dietary_tags: item.dietary_tags || [],
+                    image_url: item.image_url || '/assets/image_placeholder.jpg'
+                }));
+                setMenuItems(mappedItems);
+            }
+            setIsLoading(false);
+        }
+        fetchMenu();
+    }, []);
+
     // Close dropdowns when clicking outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -35,16 +62,16 @@ export function MenuFeed() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const filteredItems = sampleMenuItems.filter((item) => {
+    const filteredItems = menuItems.filter((item) => {
         const categoryMatch = activeCategory === "All" ? true : item.category === activeCategory;
         const dietaryMatch = dietaryFilter === "All" ? true : item.dietary_tags.includes(dietaryFilter);
         return categoryMatch && dietaryMatch;
     });
 
-    const selectedItem = sampleMenuItems.find(i => i.id === selectedItemId) || null;
+    const selectedItem = menuItems.find(i => i.id === selectedItemId) || null;
 
-    const handleAddToCart = (id: string, quantity: number = 1) => {
-        addItem(id, quantity);
+    const handleAddToCart = (item: any, quantity: number = 1) => {
+        addItem(item, quantity);
     };
 
     const handleOpenDetails = (id: string) => {
@@ -54,6 +81,14 @@ export function MenuFeed() {
     const handleCloseDetails = () => {
         setSelectedItemId(null);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center py-20">
+                <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-10">
@@ -88,19 +123,19 @@ export function MenuFeed() {
                             <div className="absolute top-full left-0 w-48 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 origin-top">
                                 {categories.map((category) => (
                                     <button
-                                        key={category}
+                                        key={category.id}
                                         onClick={() => {
-                                            setActiveCategory(category);
+                                            setActiveCategory(category.name);
                                             setIsDropdownOpen(false);
                                         }}
                                         className={cn(
                                             "w-full text-left px-4 py-3 text-sm transition-colors border-b border-zinc-100 last:border-0 dark:border-zinc-800",
-                                            activeCategory === category
+                                            activeCategory === category.name
                                                 ? "bg-primary/10 text-primary font-bold"
                                                 : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 font-medium"
                                         )}
                                     >
-                                        {category}
+                                        {category.name}
                                     </button>
                                 ))}
                             </div>
@@ -185,7 +220,7 @@ export function MenuFeed() {
                     <MenuItemCard
                         key={item.id}
                         item={item}
-                        onAdd={(id) => handleAddToCart(id, 1)}
+                        onAdd={(addedItem) => handleAddToCart(addedItem, 1)}
                         onClick={handleOpenDetails}
                     />
                 ))}

@@ -2,11 +2,12 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
-import { ChevronLeft, Calendar as CalendarIcon, MapPin, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Calendar as CalendarIcon, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 // Helper to get dates starting from Tomorrow (T+1)
 const getUpcomingDates = (daysCount = 7) => {
@@ -22,13 +23,27 @@ const getUpcomingDates = (daysCount = 7) => {
 
 export default function DeliveryPage() {
     const router = useRouter();
-    const { isAuthenticated } = useAuthStore();
-    const { items } = useCartStore();
+    const { user, isAuthenticated } = useAuthStore();
+    const { items, setCheckoutDetails } = useCartStore();
     const [mounted, setMounted] = useState(false);
 
     const [availableDates] = useState(() => getUpcomingDates());
     const [selectedDateIndex, setSelectedDateIndex] = useState(0);
-    const [selectedAddressMode, setSelectedAddressMode] = useState<"saved" | "new">("saved");
+
+    // Address State
+    const [addresses, setAddresses] = useState<any[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new");
+    const [isFetchingAddresses, setIsFetchingAddresses] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // New Address Form State
+    const [newAddress, setNewAddress] = useState({
+        type: "Home",
+        street_address: "",
+        build_floor_apt: "",
+        area_locality: "",
+        delivery_instructions: ""
+    });
 
     useEffect(() => {
         setMounted(true);
@@ -37,8 +52,57 @@ export default function DeliveryPage() {
     useEffect(() => {
         if (mounted && (!isAuthenticated || items.length === 0)) {
             router.push("/");
+        } else if (mounted && user) {
+            fetchAddresses();
         }
-    }, [mounted, isAuthenticated, items.length, router]);
+    }, [mounted, isAuthenticated, items.length, user, router]);
+
+    const fetchAddresses = async () => {
+        setIsFetchingAddresses(true);
+        const { data } = await supabase.from('addresses').select('*').eq('user_id', user!.id).order('is_default', { ascending: false }).order('created_at', { ascending: false });
+        if (data && data.length > 0) {
+            setAddresses(data);
+            // Auto-select the default or first address
+            setSelectedAddressId(data[0].id);
+        } else {
+            setSelectedAddressId("new");
+        }
+        setIsFetchingAddresses(false);
+    };
+
+    const handleContinue = async () => {
+        const deliveryDate = availableDates[selectedDateIndex].toISOString().split('T')[0];
+
+        if (selectedAddressId === "new") {
+            if (!newAddress.street_address || !newAddress.area_locality) {
+                alert("Please fill in the required address fields (Street Address & Area).");
+                return;
+            }
+
+            setIsProcessing(true);
+            const isFirst = addresses.length === 0;
+            const mappedDetails = `${newAddress.build_floor_apt ? newAddress.build_floor_apt + ', ' : ''}${newAddress.street_address}\n${newAddress.area_locality}${newAddress.delivery_instructions ? '\nNote: ' + newAddress.delivery_instructions : ''}`;
+
+            const { data, error } = await supabase.from('addresses').insert({
+                user_id: user!.id,
+                tag: newAddress.type,
+                details: mappedDetails,
+                is_default: isFirst
+            }).select().single();
+
+            if (error || !data) {
+                alert("Error saving address. Please try again.");
+                setIsProcessing(false);
+                return;
+            }
+
+            setCheckoutDetails({ date: deliveryDate, addressId: data.id });
+            router.push("/checkout/review");
+        } else {
+            setCheckoutDetails({ date: deliveryDate, addressId: selectedAddressId });
+            router.push("/checkout/review");
+        }
+    };
 
     if (!mounted || !isAuthenticated || items.length === 0) return null;
 
@@ -50,7 +114,7 @@ export default function DeliveryPage() {
                         <ChevronLeft className="w-6 h-6" />
                     </Link>
                     <h1 className="text-xl font-bold title-font">Delivery Details</h1>
-                    <div className="w-10"></div> {/* Spacer for centering */}
+                    <div className="w-10"></div>
                 </div>
             </header>
 
@@ -103,53 +167,94 @@ export default function DeliveryPage() {
                         <h2 className="text-xl font-bold">Where to deliver?</h2>
                     </div>
 
-                    <div className="space-y-4">
-                        <div
-                            onClick={() => setSelectedAddressMode("saved")}
-                            className={cn(
-                                "p-5 rounded-2xl border-2 cursor-pointer transition-all flex gap-4 items-start",
-                                selectedAddressMode === "saved"
-                                    ? "border-primary bg-primary/5"
-                                    : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
-                            )}
-                        >
-                            <div className="mt-0.5">
-                                <CheckCircle2 className={cn("w-5 h-5 transition-colors", selectedAddressMode === "saved" ? "text-primary fill-primary/20" : "text-zinc-300")} />
-                            </div>
-                            <div>
-                                <span className="text-xs font-bold uppercase tracking-wider text-primary mb-1 block">Home</span>
-                                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
-                                    123, Residency Road, Near Lake Post, Bangalore - 560025
-                                </p>
-                            </div>
+                    {isFetchingAddresses ? (
+                        <div className="flex justify-center py-8">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         </div>
-
-                        <div
-                            onClick={() => setSelectedAddressMode("new")}
-                            className={cn(
-                                "p-5 rounded-2xl border-2 cursor-pointer transition-all flex gap-4 items-center",
-                                selectedAddressMode === "new"
-                                    ? "border-primary bg-primary/5"
-                                    : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
-                            )}
-                        >
-                            <div>
-                                <CheckCircle2 className={cn("w-5 h-5 transition-colors", selectedAddressMode === "new" ? "text-primary fill-primary/20" : "text-zinc-300")} />
-                            </div>
-                            <span className="font-semibold">Add New Address</span>
-                        </div>
-
-                        {selectedAddressMode === "new" && (
-                            <div className="mt-4 p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 space-y-4 border border-zinc-100 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4">
-                                <input type="text" placeholder="Flat, House no., Building, Company" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm" />
-                                <input type="text" placeholder="Area, Street, Sector, Village" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm" />
-                                <div className="flex gap-4">
-                                    <input type="text" placeholder="Landmark" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm" />
-                                    <input type="text" placeholder="Pincode" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm" />
+                    ) : (
+                        <div className="space-y-4">
+                            {addresses.map((address) => (
+                                <div
+                                    key={address.id}
+                                    onClick={() => setSelectedAddressId(address.id)}
+                                    className={cn(
+                                        "p-5 rounded-2xl border-2 cursor-pointer transition-all flex gap-4 items-start",
+                                        selectedAddressId === address.id
+                                            ? "border-primary bg-primary/5"
+                                            : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="mt-0.5">
+                                        <CheckCircle2 className={cn("w-5 h-5 transition-colors", selectedAddressId === address.id ? "text-primary fill-primary/20" : "text-zinc-300")} />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md">{address.tag || address.type}</span>
+                                        </div>
+                                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-line">
+                                            {address.details || `${address.street_address}\n${address.area_locality}`}
+                                        </p>
+                                    </div>
                                 </div>
+                            ))}
+
+                            <div
+                                onClick={() => setSelectedAddressId("new")}
+                                className={cn(
+                                    "p-5 rounded-2xl border-2 cursor-pointer transition-all flex gap-4 items-center",
+                                    selectedAddressId === "new"
+                                        ? "border-primary bg-primary/5"
+                                        : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
+                                )}
+                            >
+                                <div>
+                                    <CheckCircle2 className={cn("w-5 h-5 transition-colors", selectedAddressId === "new" ? "text-primary fill-primary/20" : "text-zinc-300")} />
+                                </div>
+                                <span className="font-semibold">Add New Address</span>
                             </div>
-                        )}
-                    </div>
+
+                            {selectedAddressId === "new" && (
+                                <div className="mt-4 p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 space-y-4 border border-zinc-100 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4">
+                                    <select
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm"
+                                        value={newAddress.type}
+                                        onChange={(e) => setNewAddress({ ...newAddress, type: e.target.value })}
+                                    >
+                                        <option value="Home">Home</option>
+                                        <option value="Work">Work</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <input
+                                        type="text"
+                                        placeholder="Building, Floor, Apt (Optional)"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm"
+                                        value={newAddress.build_floor_apt}
+                                        onChange={(e) => setNewAddress({ ...newAddress, build_floor_apt: e.target.value })}
+                                    />
+                                    <textarea
+                                        placeholder="Street Address & Landmark *"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm min-h-[60px]"
+                                        value={newAddress.street_address}
+                                        onChange={(e) => setNewAddress({ ...newAddress, street_address: e.target.value })}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Area / Locality *"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm"
+                                        value={newAddress.area_locality}
+                                        onChange={(e) => setNewAddress({ ...newAddress, area_locality: e.target.value })}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Delivery Instructions (Optional)"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm"
+                                        value={newAddress.delivery_instructions}
+                                        onChange={(e) => setNewAddress({ ...newAddress, delivery_instructions: e.target.value })}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </section>
             </main>
 
@@ -157,10 +262,11 @@ export default function DeliveryPage() {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 p-4 z-40">
                 <div className="container mx-auto max-w-2xl">
                     <button
-                        onClick={() => router.push("/checkout/review")}
-                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5"
+                        onClick={handleContinue}
+                        disabled={isProcessing}
+                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        Review Order
+                        {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : "Review Order"}
                     </button>
                 </div>
             </div>

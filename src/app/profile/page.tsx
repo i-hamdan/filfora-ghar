@@ -6,19 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-interface Address {
-    id: string;
-    tag: string;
-    details: string;
-}
-
-const initialAddresses: Address[] = [
-    {
-        id: "1",
-        tag: "Home",
-        details: "123, Residency Road, Near Lake Post,\nBangalore - 560025",
-    }
-];
+import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
     const { user, isAuthenticated, logout } = useAuthStore();
@@ -26,10 +14,53 @@ export default function ProfilePage() {
     const [mounted, setMounted] = useState(false);
 
     // Address State
-    const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
-    const [defaultAddressId, setDefaultAddressId] = useState<string>("1");
+    // Address State
+    const [addresses, setAddresses] = useState<any[]>([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [newAddress, setNewAddress] = useState({ tag: "", details: "" });
+    const [newAddress, setNewAddress] = useState({
+        type: "Home",
+        street_address: "",
+        build_floor_apt: "",
+        area_locality: "",
+        delivery_instructions: ""
+    });
+
+    useEffect(() => {
+        if (user) {
+            fetchAddresses();
+        }
+    }, [user]);
+
+    const fetchAddresses = async () => {
+        const { data } = await supabase.from('addresses').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
+        if (data) setAddresses(data);
+    };
+
+    const handleSaveAddress = async () => {
+        if (!newAddress.street_address || !newAddress.area_locality) return;
+
+        const isFirst = addresses.length === 0;
+        const mappedDetails = `${newAddress.build_floor_apt ? newAddress.build_floor_apt + ', ' : ''}${newAddress.street_address}\n${newAddress.area_locality}${newAddress.delivery_instructions ? '\nNote: ' + newAddress.delivery_instructions : ''}`;
+
+        const { data, error } = await supabase.from('addresses').insert({
+            user_id: user!.id,
+            tag: newAddress.type,
+            details: mappedDetails,
+            is_default: isFirst
+        }).select().single();
+
+        if (data && !error) {
+            setAddresses([data, ...addresses]);
+            setIsAdding(false);
+            setNewAddress({ type: "Home", street_address: "", build_floor_apt: "", area_locality: "", delivery_instructions: "" });
+        }
+    };
+
+    const handleSetDefault = async (id: string) => {
+        setAddresses(addresses.map(a => ({ ...a, is_default: a.id === id })));
+        await supabase.from('addresses').update({ is_default: false }).eq('user_id', user!.id);
+        await supabase.from('addresses').update({ is_default: true }).eq('id', id);
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -114,49 +145,72 @@ export default function ProfilePage() {
                                 {addresses.map((address) => (
                                     <div
                                         key={address.id}
-                                        className={`group relative overflow-hidden p-5 border-2 rounded-2xl transition-colors ${defaultAddressId === address.id
+                                        className={`group relative overflow-hidden p-5 border-2 rounded-2xl transition-colors ${address.is_default
                                             ? "border-primary/20 dark:border-primary/30 bg-primary/5"
                                             : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                                             }`}
                                     >
-                                        {defaultAddressId === address.id && (
+                                        {address.is_default && (
                                             <div className="absolute top-0 right-0 p-3">
                                                 <CheckCircle2 className="w-5 h-5 text-primary" />
                                             </div>
                                         )}
                                         <div className="flex justify-between items-start mb-2">
                                             <span className="inline-block px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 rounded-md">
-                                                {address.tag}
+                                                {address.tag || address.type}
                                             </span>
-                                            {defaultAddressId !== address.id && (
+                                            {!address.is_default && (
                                                 <button
-                                                    onClick={() => setDefaultAddressId(address.id)}
-                                                    className="text-xs font-bold text-primary hover:underline"
+                                                    onClick={() => handleSetDefault(address.id)}
+                                                    className="text-xs font-bold text-primary hover:underline flex-shrink-0 ml-4"
                                                 >
                                                     Set default
                                                 </button>
                                             )}
                                         </div>
                                         <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-line mt-2">
-                                            {address.details}
+                                            {address.details || `${address.street_address}\n${address.area_locality}`}
                                         </p>
                                     </div>
                                 ))}
 
                                 {isAdding ? (
                                     <div className="p-5 border-2 border-primary/30 rounded-2xl bg-white dark:bg-zinc-900 space-y-3">
+                                        <select
+                                            className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            value={newAddress.type}
+                                            onChange={(e) => setNewAddress({ ...newAddress, type: e.target.value })}
+                                        >
+                                            <option value="Home">Home</option>
+                                            <option value="Work">Work</option>
+                                            <option value="Other">Other</option>
+                                        </select>
                                         <input
                                             type="text"
-                                            placeholder="Tag (e.g., Work)"
+                                            placeholder="Building, Floor, Apt (Optional)"
                                             className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            value={newAddress.tag}
-                                            onChange={(e) => setNewAddress({ ...newAddress, tag: e.target.value })}
+                                            value={newAddress.build_floor_apt}
+                                            onChange={(e) => setNewAddress({ ...newAddress, build_floor_apt: e.target.value })}
                                         />
                                         <textarea
-                                            placeholder="Full Address"
-                                            className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[80px]"
-                                            value={newAddress.details}
-                                            onChange={(e) => setNewAddress({ ...newAddress, details: e.target.value })}
+                                            placeholder="Street Address & Landmark *"
+                                            className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[60px]"
+                                            value={newAddress.street_address}
+                                            onChange={(e) => setNewAddress({ ...newAddress, street_address: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Area / Locality *"
+                                            className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            value={newAddress.area_locality}
+                                            onChange={(e) => setNewAddress({ ...newAddress, area_locality: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Delivery Instructions (Optional)"
+                                            className="w-full text-sm p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            value={newAddress.delivery_instructions}
+                                            onChange={(e) => setNewAddress({ ...newAddress, delivery_instructions: e.target.value })}
                                         />
                                         <div className="flex gap-2 justify-end pt-2">
                                             <button
@@ -166,16 +220,9 @@ export default function ProfilePage() {
                                                 Cancel
                                             </button>
                                             <button
-                                                onClick={() => {
-                                                    if (newAddress.tag && newAddress.details) {
-                                                        const id = Date.now().toString();
-                                                        setAddresses([...addresses, { id, ...newAddress }]);
-                                                        setIsAdding(false);
-                                                        setNewAddress({ tag: "", details: "" });
-                                                        setDefaultAddressId(id);
-                                                    }
-                                                }}
-                                                className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                                                onClick={handleSaveAddress}
+                                                disabled={!newAddress.street_address || !newAddress.area_locality}
+                                                className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
                                             >
                                                 Save
                                             </button>

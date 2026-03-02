@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Phone, ShieldCheck, User as UserIcon, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/useAuthStore";
+import { supabase } from "@/lib/supabase";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -30,11 +31,19 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setError("");
         setIsLoading(true);
 
-        // MOCK OTP SEND
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            const { data, error: fnError } = await supabase.functions.invoke('send-whatsapp-otp', {
+                body: { phone: `+91${phone}` }
+            });
+            if (fnError) throw fnError;
+            if (data?.error) throw new Error(data.error);
+
             setStep("otp");
-        }, 1500);
+        } catch (err: any) {
+            setError(err.message || "Failed to send OTP. Try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
@@ -46,19 +55,39 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setError("");
         setIsLoading(true);
 
-        // MOCK OTP VERIFY
-        setTimeout(() => {
-            setIsLoading(false);
-            // Mock checking if user exists
-            const isNewUser = true; // Hardcoded mock
-            if (isNewUser) {
-                setStep("name");
+        try {
+            const fullPhone = `+91${phone}`;
+            const { data, error: fnError } = await supabase.functions.invoke('verify-whatsapp-otp', {
+                body: { phone: fullPhone, otp, name: "Guest Customer" }
+            });
+            if (fnError) throw fnError;
+            if (data?.error) throw new Error(data.error);
+
+            const authEmail = `${phone}@filforaghar.com`;
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: authEmail,
+                password: "FilforaWhatsAppAuth2026!",
+            });
+
+            if (signInError) throw signInError;
+
+            const { data: profile } = await supabase.from('profiles').select('*').eq('phone', fullPhone).single();
+            if (profile) {
+                setUser(profile as any);
+                if (!profile.full_name || profile.full_name === "Guest Customer") {
+                    setStep("name");
+                } else {
+                    if (onSuccess) onSuccess();
+                    handleClose();
+                }
             } else {
-                setUser({ id: "mock-id-123", phone, full_name: "Mock User" });
-                if (onSuccess) onSuccess();
-                handleClose();
+                setStep("name");
             }
-        }, 1500);
+        } catch (err: any) {
+            setError(err.message || "Invalid OTP or session failed");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleSaveName = async (e: React.FormEvent) => {
@@ -70,13 +99,19 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setError("");
         setIsLoading(true);
 
-        // MOCK SAVE NAME
-        setTimeout(() => {
-            setIsLoading(false);
-            setUser({ id: "mock-id-123", phone, full_name: name });
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase.from('profiles').update({ full_name: name }).eq('id', user.id);
+                setUser({ id: user.id, phone: `+91${phone}`, full_name: name });
+            }
             if (onSuccess) onSuccess();
             handleClose();
-        }, 1000);
+        } catch (err: any) {
+            setError("Failed to save profile name.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleClose = () => {

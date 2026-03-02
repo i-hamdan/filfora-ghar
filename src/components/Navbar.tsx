@@ -9,7 +9,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ThemeToggle } from "./ThemeToggle";
 import { AuthModal } from "./AuthModal";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export function Navbar() {
     // --- Logo Configuration ---
@@ -25,6 +25,11 @@ export function Navbar() {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
 
     useEffect(() => {
         setMounted(true);

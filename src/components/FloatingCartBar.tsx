@@ -1,7 +1,6 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { sampleMenuItems } from "@/lib/data";
 import { ShoppingBag, Trash2, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -22,8 +21,7 @@ export function FloatingCartBar() {
 
     // Calculate total price to show in the bar
     const total = items.reduce((sum, item) => {
-        const details = sampleMenuItems.find(i => i.id === item.id);
-        return sum + ((details?.price || 0) * item.quantity);
+        return sum + ((item.price || 0) * item.quantity);
     }, 0);
 
     return (
