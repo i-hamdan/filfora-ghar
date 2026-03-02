@@ -32,7 +32,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setIsLoading(true);
 
         try {
-            console.log("Attempting to send OTP via proxy for:", `+91${phone}`);
             const response = await fetch('/api/auth/otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -42,14 +41,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             const data = await response.json();
 
             if (!response.ok) {
-                console.error("Proxy error:", data);
                 throw new Error(data.error || "Failed to send OTP. Please check your connection.");
             }
 
-            console.log("OTP sent successfully via proxy");
             setStep("otp");
         } catch (err: any) {
-            console.error("Full catch error in handleSendOtp:", err);
             setError(err.message || "Failed to send OTP. Please check your internet connection.");
         } finally {
             setIsLoading(false);
@@ -67,7 +63,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
         try {
             const fullPhone = `+91${phone}`;
-            console.log("Attempting to verify OTP via proxy for:", fullPhone);
             const response = await fetch('/api/auth/otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,7 +72,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             const data = await response.json();
 
             if (!response.ok) {
-                console.error("Proxy verify error:", data);
                 throw new Error(data.error || "OTP verification failed. Please try again.");
             }
 

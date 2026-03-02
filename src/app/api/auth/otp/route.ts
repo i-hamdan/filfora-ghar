@@ -7,15 +7,9 @@ export async function POST(request: Request) {
     try {
         const { phone, otp, name, action } = await request.json();
 
-        console.log(`[OTP-PROXY] Action: ${action}, Phone: ${phone}`);
-
         if (!supabaseUrl || !supabaseServiceKey) {
-            console.error("[OTP-PROXY] Missing environment variables!", {
-                url: !!supabaseUrl,
-                key: !!supabaseServiceKey
-            });
             return NextResponse.json({
-                error: "Server configuration error. Missing Supabase keys in Netlify."
+                error: "Server configuration error. Missing Supabase keys."
             }, { status: 500 });
         }
 
@@ -23,10 +17,6 @@ export async function POST(request: Request) {
         const payload = action === 'send' ? { phone } : { phone, otp, name: name || "" };
         const functionUrl = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/${functionName}`;
         const cleanKey = supabaseServiceKey.trim();
-
-        console.log(`[OTP-PROXY] Endpoint: ${functionUrl}`);
-        console.log(`[OTP-PROXY] Key Check: Length=${cleanKey.length}, Starts with: ${cleanKey.substring(0, 7)}...`);
-        console.log(`[OTP-PROXY] Calling ${functionName}...`);
 
         const response = await fetch(functionUrl, {
             method: 'POST',
@@ -40,8 +30,6 @@ export async function POST(request: Request) {
         const status = response.status;
         const responseText = await response.text();
 
-        console.log(`[OTP-PROXY] Response Status: ${status}`);
-
         let data;
         try {
             data = JSON.parse(responseText);
@@ -50,13 +38,11 @@ export async function POST(request: Request) {
         }
 
         if (!response.ok) {
-            console.error(`[OTP-PROXY] ${functionName} failed:`, { status, data });
             return NextResponse.json({
-                error: data.error || `Edge Function returned ${status}: ${responseText.slice(0, 100)}`
+                error: data.error || `Error ${status}: ${responseText.slice(0, 100)}`
             }, { status: 500 });
         }
 
-        console.log(`[OTP-PROXY] ${functionName} success!`);
         return NextResponse.json(data);
 
     } catch (err: any) {
