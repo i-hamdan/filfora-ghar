@@ -107,7 +107,7 @@ export default function DeliveryPage() {
     if (!mounted || !isAuthenticated || items.length === 0) return null;
 
     return (
-        <div className="bg-zinc-50 dark:bg-black min-h-screen pb-24">
+        <div className="bg-zinc-50 dark:bg-black min-h-screen pb-32">
             <header className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-30 pt-16 pb-4 px-4 shadow-sm">
                 <div className="container mx-auto max-w-2xl flex items-center justify-between">
                     <Link href="/" className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
@@ -259,7 +259,7 @@ export default function DeliveryPage() {
             </main>
 
             {/* Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 p-4 z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 p-4 z-50">
                 <div className="container mx-auto max-w-2xl">
                     <button
                         onClick={handleContinue}

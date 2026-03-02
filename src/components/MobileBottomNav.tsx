@@ -26,7 +26,7 @@ import { AuthModal } from "./AuthModal";
 export function MobileBottomNav() {
     const pathname = usePathname();
 
-    if (pathname?.startsWith('/admin')) {
+    if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout')) {
         return null;
     }
 
