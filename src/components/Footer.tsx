@@ -14,7 +14,7 @@ export function Footer() {
 
     const pathname = usePathname();
 
-    if (pathname.startsWith('/cart') || pathname.startsWith('/checkout')) {
+    if (pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/profile')) {
         return null;
     }
 

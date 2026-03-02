@@ -55,7 +55,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="bg-zinc-50 dark:bg-black min-h-screen pt-24 pb-32 transition-colors">
+        <div className="bg-zinc-50 dark:bg-black min-h-screen pt-24 pb-6 md:pb-8 transition-colors">
             {/* Background Header Graphic */}
             <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/20 to-transparent dark:from-primary/10 pointer-events-none -z-10" />
 
