@@ -1,47 +1,64 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
 export async function POST(request: Request) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     try {
         const { phone, otp, name, action } = await request.json();
 
-        if (action === 'send') {
-            console.log(`[API Proxy] Sending OTP to ${phone}`);
-            const { data, error } = await supabase.functions.invoke('send-whatsapp-otp', {
-                body: { phone }
+        console.log(`[OTP-PROXY] Action: ${action}, Phone: ${phone}`);
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            console.error("[OTP-PROXY] Missing environment variables!", {
+                url: !!supabaseUrl,
+                key: !!supabaseServiceKey
             });
-
-            if (error) {
-                console.error(`[API Proxy] Send OTP error:`, error);
-                return NextResponse.json({ error: error.message }, { status: 500 });
-            }
-
-            return NextResponse.json(data);
+            return NextResponse.json({
+                error: "Server configuration error. Missing Supabase keys in Netlify."
+            }, { status: 500 });
         }
 
-        if (action === 'verify') {
-            console.log(`[API Proxy] Verifying OTP for ${phone}`);
-            const { data, error } = await supabase.functions.invoke('verify-whatsapp-otp', {
-                body: { phone, otp, name }
-            });
+        const functionName = action === 'send' ? 'send-whatsapp-otp' : 'verify-whatsapp-otp';
+        const payload = action === 'send' ? { phone } : { phone, otp, name: name || "" };
 
-            if (error) {
-                console.error(`[API Proxy] Verify OTP error:`, error);
-                return NextResponse.json({ error: error.message }, { status: 500 });
-            }
+        console.log(`[OTP-PROXY] Calling ${functionName}...`);
 
-            return NextResponse.json(data);
+        // We use direct fetch to exactly match the successful manual curl and avoid SDK overhead/hidden behavior
+        const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+                'apikey': supabaseServiceKey // Some gateways prefer apikey
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const status = response.status;
+        const responseText = await response.text();
+
+        console.log(`[OTP-PROXY] Response Status: ${status}`);
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            data = { text: responseText };
         }
 
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+        if (!response.ok) {
+            console.error(`[OTP-PROXY] ${functionName} failed:`, { status, data });
+            return NextResponse.json({
+                error: data.error || `Edge Function returned ${status}: ${responseText.slice(0, 100)}`
+            }, { status: 500 });
+        }
+
+        console.log(`[OTP-PROXY] ${functionName} success!`);
+        return NextResponse.json(data);
 
     } catch (err: any) {
-        console.error(`[API Proxy] Internal error:`, err);
+        console.error(`[OTP-PROXY] Critical Failure:`, err);
         return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
     }
 }
