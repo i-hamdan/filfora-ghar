@@ -21,16 +21,18 @@ export async function POST(request: Request) {
 
         const functionName = action === 'send' ? 'send-whatsapp-otp' : 'verify-whatsapp-otp';
         const payload = action === 'send' ? { phone } : { phone, otp, name: name || "" };
+        const functionUrl = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/${functionName}`;
+        const cleanKey = supabaseServiceKey.trim();
 
-        console.log(`[OTP-PROXY] Key Length: ${supabaseServiceKey?.length}, Starts with: ${supabaseServiceKey?.substring(0, 10)}...`);
+        console.log(`[OTP-PROXY] Endpoint: ${functionUrl}`);
+        console.log(`[OTP-PROXY] Key Check: Length=${cleanKey.length}, Starts with: ${cleanKey.substring(0, 7)}...`);
         console.log(`[OTP-PROXY] Calling ${functionName}...`);
 
-        // We use direct fetch to exactly match the successful manual curl
-        const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+        const response = await fetch(functionUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabaseServiceKey?.trim()}`
+                'Authorization': `Bearer ${cleanKey}`
             },
             body: JSON.stringify(payload)
         });
