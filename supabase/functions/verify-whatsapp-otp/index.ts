@@ -38,7 +38,13 @@ serve(async (req: Request) => {
         if (queryError) throw queryError;
 
         if (!verifications || verifications.length === 0) {
-            return new Response(JSON.stringify({ error: "Invalid or expired OTP" }), { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
+            return new Response(JSON.stringify({ error: "Invalid or expired OTP. Please request a new one." }), {
+                status: 400,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                }
+            });
         }
 
         const verification = verifications[0];
@@ -78,8 +84,8 @@ serve(async (req: Request) => {
                     full_name: name || "Guest Customer"
                 });
             }
-        } else if (name) {
-            // Update name if provided and user already exists
+        } else if (name && name !== "Guest Customer") {
+            // Update name if provided and user already exists, but don't overwrite with "Guest Customer"
             await supabaseAdmin.from('profiles').update({ full_name: name }).eq('id', authUser.id);
         }
 

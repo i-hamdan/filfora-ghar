@@ -58,7 +58,7 @@ export default function CartPage() {
                         </div>
                         <button
                             onClick={() => router.push('/#menu')}
-                            className="mt-4 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
+                            className="mt-4 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-full font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
                         >
                             Browse our menu
                         </button>

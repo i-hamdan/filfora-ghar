@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { siteConfig } from "@/lib/config";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const googleFonts = [
   { id: 1, name: "Outfit", url: "Outfit:wght@300;400;500;600;700" },
@@ -59,12 +60,14 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <Navbar />
-          <main className="flex-1 pb-[6rem] md:pb-0">
-            {children}
-          </main>
-          <Footer />
-          <MobileBottomNav />
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1 pb-[6rem] md:pb-0">
+              {children}
+            </main>
+            <Footer />
+            <MobileBottomNav />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

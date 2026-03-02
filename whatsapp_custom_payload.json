@@ -1,0 +1,30 @@
+{
+  "messaging_product": "whatsapp",
+  "to": "919800454222",
+  "type": "template",
+  "template": {
+    "name": "test_tempalte",
+    "language": {
+      "code": "en_US"
+    },
+    "components": [
+      {
+        "type": "body",
+        "parameters": [
+          {
+            "type": "text",
+            "text": "Hamdan Iftikhar"
+          },
+          {
+            "type": "text",
+            "text": "Bhopal, India"
+          },
+          {
+            "type": "text",
+            "text": "hamdan@gmail.com"
+          }
+        ]
+      }
+    ]
+  }
+}

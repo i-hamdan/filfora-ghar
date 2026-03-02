@@ -264,7 +264,7 @@ export default function DeliveryPage() {
                     <button
                         onClick={handleContinue}
                         disabled={isProcessing}
-                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : "Review Order"}
                     </button>

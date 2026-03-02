@@ -53,9 +53,9 @@ serve(async (req: Request) => {
                 to: cleanPhone,
                 type: "template",
                 template: {
-                    name: "support_ticket",
+                    name: "test_tempalte",
                     language: {
-                        code: "en"
+                        code: "en_US"
                     },
                     components: [
                         {
@@ -63,7 +63,15 @@ serve(async (req: Request) => {
                             parameters: [
                                 {
                                     type: "text",
-                                    text: otp
+                                    text: "Customer"
+                                },
+                                {
+                                    type: "text",
+                                    text: `Your OTP is: ${otp}`
+                                },
+                                {
+                                    type: "text",
+                                    text: "the Filfora Team"
                                 }
                             ]
                         }

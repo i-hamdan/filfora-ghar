@@ -58,12 +58,17 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         try {
             const fullPhone = `+91${phone}`;
             const { data, error: fnError } = await supabase.functions.invoke('verify-whatsapp-otp', {
-                body: { phone: fullPhone, otp, name: "Guest Customer" }
+                body: { phone: fullPhone, otp, name: "" }
             });
-            if (fnError) throw fnError;
+
+            if (fnError) {
+                // Handle case where function returns a non-2xx status code directly
+                const errorData = await fnError.context?.json?.().catch(() => null);
+                throw new Error(errorData?.error || "OTP verification failed. Please try again.");
+            }
             if (data?.error) throw new Error(data.error);
 
-            const authEmail = `${phone}@filforaghar.com`;
+            const authEmail = `91${phone}@filforaghar.com`;
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: authEmail,
                 password: "FilforaWhatsAppAuth2026!",
@@ -171,14 +176,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                                             value={phone}
                                             onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                                             placeholder="10-digit mobile number"
-                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-xl py-4 pl-14 pr-4 transition-all text-lg font-medium tracking-wide"
+                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-2xl py-4 pl-14 pr-4 transition-all text-lg font-medium tracking-wide"
                                             autoFocus
                                         />
                                     </div>
                                     {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
                                     <button
                                         disabled={isLoading || phone.length < 10}
-                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
+                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
                                     >
                                         {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Continue with WhatsApp"}
                                     </button>
@@ -192,13 +197,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                         placeholder="Enter OTP"
-                                        className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-xl py-4 px-4 transition-all text-center text-2xl tracking-[0.5em] font-bold"
+                                        className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-2xl py-4 px-4 transition-all text-center text-2xl tracking-[0.5em] font-bold"
                                         autoFocus
                                     />
                                     {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
                                     <button
                                         disabled={isLoading || otp.length < 4}
-                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
+                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
                                     >
                                         {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Verify & Continue"}
                                     </button>
@@ -217,14 +222,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             placeholder="e.g. Asif Rasheed"
-                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-xl py-4 pl-12 pr-4 transition-all text-lg font-medium"
+                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-zinc-900 outline-none rounded-2xl py-4 pl-12 pr-4 transition-all text-lg font-medium"
                                             autoFocus
                                         />
                                     </div>
                                     {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
                                     <button
                                         disabled={isLoading || name.length < 3}
-                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
+                                        className="w-full bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg disabled:opacity-50 transition-all flex justify-center items-center shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 mt-2"
                                     >
                                         {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save & Finish"}
                                     </button>

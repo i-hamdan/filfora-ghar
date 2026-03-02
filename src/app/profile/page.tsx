@@ -1,12 +1,14 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { LogOut, MapPin, Package, Settings, User as UserIcon, CheckCircle2, Phone, Mail, Edit3, ArrowRight, Star, Clock } from "lucide-react";
+import { LogOut, MapPin, Package, Settings, User as UserIcon, CheckCircle2, Phone, Mail, Edit3, ArrowRight, Star, Clock, Loader2, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
     const { user, isAuthenticated, logout } = useAuthStore();
@@ -14,9 +16,13 @@ export default function ProfilePage() {
     const [mounted, setMounted] = useState(false);
 
     // Address State
-    // Address State
     const [addresses, setAddresses] = useState<any[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
     const [isAdding, setIsAdding] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_SIZE = 3;
     const [newAddress, setNewAddress] = useState({
         type: "Home",
         street_address: "",
@@ -28,6 +34,7 @@ export default function ProfilePage() {
     useEffect(() => {
         if (user) {
             fetchAddresses();
+            fetchOrders();
         }
     }, [user]);
 
@@ -35,6 +42,41 @@ export default function ProfilePage() {
         const { data } = await supabase.from('addresses').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
         if (data) setAddresses(data);
     };
+
+    const fetchOrders = async (targetPage = 0) => {
+        setIsLoading(true);
+
+        const start = targetPage * PAGE_SIZE;
+        const end = start + PAGE_SIZE - 1;
+
+        const { data, error, count } = await supabase
+            .from('orders')
+            .select(`
+                *,
+                order_items (
+                    *,
+                    menu_items (*)
+                )
+            `, { count: 'exact' })
+            .eq('user_id', user!.id)
+            .order('created_at', { ascending: false })
+            .range(start, end);
+
+        if (!error && data) {
+            setOrders(data);
+            setPage(targetPage);
+            if (count !== null) setTotalCount(count);
+
+            // Smooth scroll to top of orders section
+            const ordersSection = document.getElementById('orders-section');
+            if (ordersSection) {
+                ordersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        setIsLoading(false);
+    };
+
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     const handleSaveAddress = async () => {
         if (!newAddress.street_address || !newAddress.area_locality) return;
@@ -242,67 +284,111 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Right Column (Orders) */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-8" id="orders-section">
                         <div className="bg-white dark:bg-zinc-900/80 rounded-[2rem] p-6 sm:p-8 shadow-lg shadow-zinc-200/50 dark:shadow-none border border-zinc-200 dark:border-zinc-800 backdrop-blur-xl">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-2xl font-black title-font flex items-center gap-2">
                                     <Package className="w-7 h-7 text-primary" /> Recent Orders
                                 </h3>
-                                <button className="text-sm font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all">
-                                    View All <ArrowRight className="w-4 h-4" />
-                                </button>
                             </div>
 
                             <div className="space-y-6">
-                                {/* Active Order */}
-                                <div className="relative overflow-hidden p-6 border-2 border-zinc-200 dark:border-zinc-800 hover:border-primary/50 dark:hover:border-primary/50 rounded-[1.5rem] bg-white dark:bg-zinc-900 transition-all group shadow-sm hover:shadow-md">
-                                    <div className="flex flex-col sm:flex-row justify-between gap-4">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <span className="font-black text-lg">Order #FLF-1003</span>
-                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 rounded-full text-xs font-black uppercase tracking-wider">
-                                                    Preparing
-                                                </span>
+                                {orders.length === 0 ? (
+                                    <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-[1.5rem]">
+                                        <Package className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+                                        <p className="text-zinc-500 font-medium">No orders yet. Ready for your first meal?</p>
+                                    </div>
+                                ) : (
+                                    orders.map((order) => (
+                                        <Link
+                                            key={order.id}
+                                            href={`/profile/orders/${order.id}`}
+                                            className="block relative overflow-hidden p-6 border-2 border-zinc-200 dark:border-zinc-800 hover:border-primary/50 dark:hover:border-primary/50 rounded-[1.5rem] bg-white dark:bg-zinc-900 transition-all group shadow-sm hover:shadow-md"
+                                        >
+                                            <div className="flex flex-col sm:flex-row justify-between gap-4">
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <span className="font-black text-lg">Order #FLF-{order.id.split('-')[0].toUpperCase()}</span>
+                                                        <span className={cn(
+                                                            "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider",
+                                                            order.status === 'delivered' ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400" : "bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400"
+                                                        )}>
+                                                            {order.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="font-medium text-zinc-600 dark:text-zinc-400 mb-1 line-clamp-2">
+                                                        {order.order_items.map((oi: any) => `${oi.quantity}x ${oi.menu_items?.name || 'Item'}`).join(', ')}
+                                                    </p>
+                                                    <div className="flex items-center gap-1.5 mt-2">
+                                                        <p className="text-sm font-semibold text-zinc-500">
+                                                            {order.status === 'delivered' ? 'Delivered' : 'Ordered'} on: {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                        </p>
+                                                        <span className="w-1 h-1 bg-zinc-300 rounded-full" />
+                                                        <span className="text-xs font-bold text-primary group-hover:underline">View Details</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-left sm:text-right flex flex-col justify-between">
+                                                    <p className="font-black text-2xl text-primary">₹{order.total_amount}</p>
+                                                    <button
+                                                        onClick={() => alert("Reorder functionality coming soon!")}
+                                                        className="text-sm font-bold text-zinc-900 dark:text-white hover:text-primary dark:hover:text-primary transition-colors mt-2 sm:mt-4 text-left sm:text-right"
+                                                    >
+                                                        Reorder Items
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <p className="font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                                                2x Classic Chicken Biryani, 1x Raita, 1x Coke (750ml)
-                                            </p>
-                                            <p className="text-sm font-semibold text-zinc-500">
-                                                Ordered on: 12th Oct 2026
-                                            </p>
-                                        </div>
-                                        <div className="text-left sm:text-right flex flex-col justify-between">
-                                            <p className="font-black text-2xl text-primary">₹850</p>
+                                        </Link>
+                                    ))
+                                )}
+
+                                {totalPages > 1 && (
+                                    <div className="pt-10 border-t border-zinc-100 dark:border-zinc-800">
+                                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                                            <div className="flex flex-col gap-1 text-center sm:text-left">
+                                                <p className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                                                    Page Information
+                                                </p>
+                                                <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                                                    Showing <span className="text-zinc-900 dark:text-zinc-100">{page + 1}</span> of <span className="text-zinc-900 dark:text-zinc-100">{totalPages}</span>
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 p-1.5 rounded-2xl border border-zinc-100 dark:border-zinc-900">
+                                                <button
+                                                    onClick={() => fetchOrders(0)}
+                                                    disabled={page === 0 || isLoading}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-primary/50 text-zinc-900 dark:text-zinc-100 transition-all font-black text-[10px] uppercase tracking-wider disabled:opacity-20 disabled:cursor-not-allowed shadow-sm"
+                                                >
+                                                    <ChevronsLeft className="w-4 h-4" /> <span>First</span>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => fetchOrders(page - 1)}
+                                                    disabled={page === 0 || isLoading}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-primary/50 text-zinc-900 dark:text-zinc-100 transition-all font-black text-[10px] uppercase tracking-wider disabled:opacity-20 disabled:cursor-not-allowed shadow-sm"
+                                                >
+                                                    <ArrowRight className="w-4 h-4 rotate-180" /> <span>Prev</span>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => fetchOrders(page + 1)}
+                                                    disabled={page >= totalPages - 1 || isLoading}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white border border-primary rounded-2xl hover:bg-primary/90 transition-all font-black text-[10px] uppercase tracking-wider disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-primary/20"
+                                                >
+                                                    <span>Next</span> <ArrowRight className="w-4 h-4" />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => fetchOrders(totalPages - 1)}
+                                                    disabled={page >= totalPages - 1 || isLoading}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-primary/50 text-zinc-900 dark:text-zinc-100 transition-all font-black text-[10px] uppercase tracking-wider disabled:opacity-20 disabled:cursor-not-allowed shadow-sm"
+                                                >
+                                                    <span>Last</span> <ChevronsRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Past Order */}
-                                <div className="p-6 border border-zinc-200 dark:border-zinc-800 rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-900/50 opacity-80 hover:opacity-100 transition-opacity">
-                                    <div className="flex flex-col sm:flex-row justify-between gap-4">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <span className="font-black text-lg">Order #FLF-0982</span>
-                                                <span className="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 rounded-full text-xs font-black uppercase tracking-wider">
-                                                    Delivered
-                                                </span>
-                                            </div>
-                                            <p className="font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                                                1x Mutton Nalli Nihari, 4x Garlic Naan
-                                            </p>
-                                            <p className="text-sm font-semibold text-zinc-500">
-                                                Delivered on: 12th Oct 2026
-                                            </p>
-                                        </div>
-                                        <div className="text-left sm:text-right">
-                                            <p className="font-black text-2xl">₹920</p>
-                                            <button className="text-sm font-bold text-zinc-900 dark:text-white hover:text-primary dark:hover:text-primary transition-colors mt-2 sm:mt-4 inline-block">
-                                                Reorder Items
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
+                                )}
                             </div>
                         </div>
                     </div>

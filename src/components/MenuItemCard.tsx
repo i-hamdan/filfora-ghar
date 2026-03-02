@@ -81,7 +81,7 @@ export function MenuItemCard({ item, onAdd, onClick }: MenuItemCardProps) {
                         transition={{ duration: 0.1 }}
                         onClick={handleAddClick}
                         className={cn(
-                            "w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors duration-300 relative overflow-hidden",
+                            "w-full py-3 px-4 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors duration-300 relative overflow-hidden",
                             isAdded
                                 ? "bg-green-500 text-white hover:bg-green-600"
                                 : "bg-zinc-100 hover:bg-primary hover:text-white dark:bg-zinc-800 dark:hover:bg-primary text-zinc-900 dark:text-zinc-100"

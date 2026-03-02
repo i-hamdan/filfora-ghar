@@ -158,7 +158,7 @@ export default function ReviewOrderPage() {
                     <button
                         onClick={handlePlaceOrder}
                         disabled={isProcessing}
-                        className="flex-grow max-w-xs bg-primary hover:bg-primary-dark text-white rounded-xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="flex-grow max-w-xs bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         {isProcessing ? (
                             <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />

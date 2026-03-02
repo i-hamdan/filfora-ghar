@@ -32,8 +32,10 @@ serve(async (req: Request) => {
         expires_at: new Date().toISOString()
       });
 
+      console.log("Real-time Webhook Payload:", JSON.stringify(payload, null, 2));
       return new Response('EVENT_RECEIVED', { status: 200 });
     } catch (e: any) {
+      console.error("Webhook processing error:", e.message);
       return new Response('Internal Server Error', { status: 500 });
     }
   }

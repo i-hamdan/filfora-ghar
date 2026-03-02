@@ -24,26 +24,37 @@ export function MenuFeed() {
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [menuItems, setMenuItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchMenu() {
-            setIsLoading(true);
-            const [catsRes, itemsRes] = await Promise.all([
-                supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
-                supabase.from('menu_items').select('*, categories(name)').eq('is_available', true).order('sort_order', { ascending: true })
-            ]);
+            try {
+                setIsLoading(true);
+                setError(null);
+                const [catsRes, itemsRes] = await Promise.all([
+                    supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
+                    supabase.from('menu_items').select('*, categories(name)').eq('is_available', true).order('sort_order', { ascending: true })
+                ]);
 
-            if (catsRes.data) setCategories(catsRes.data);
-            if (itemsRes.data) {
-                const mappedItems = itemsRes.data.map(item => ({
-                    ...item,
-                    category: item.categories?.name || 'Uncategorized',
-                    dietary_tags: item.dietary_tags || [],
-                    image_url: item.image_url || '/assets/image_placeholder.jpg'
-                }));
-                setMenuItems(mappedItems);
+                if (catsRes.error) throw catsRes.error;
+                if (itemsRes.error) throw itemsRes.error;
+
+                if (catsRes.data) setCategories(catsRes.data);
+                if (itemsRes.data) {
+                    const mappedItems = itemsRes.data.map(item => ({
+                        ...item,
+                        category: item.categories?.name || 'Uncategorized',
+                        dietary_tags: item.dietary_tags || [],
+                        image_url: item.image_url || '/assets/image_placeholder.jpg'
+                    }));
+                    setMenuItems(mappedItems);
+                }
+            } catch (err: any) {
+                console.error("Error fetching menu:", err);
+                setError("Failed to load menu. Please check your connection.");
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         }
         fetchMenu();
     }, []);
@@ -86,6 +97,26 @@ export function MenuFeed() {
         return (
             <div className="flex justify-center items-center py-20">
                 <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-full flex items-center justify-center mb-4 text-red-500">
+                    <X className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Oops! Something went wrong</h3>
+                <p className="text-zinc-500 dark:text-zinc-400 mb-8 max-w-sm">
+                    {error}
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                    Try Again
+                </button>
             </div>
         );
     }

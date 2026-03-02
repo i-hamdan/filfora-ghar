@@ -42,13 +42,13 @@ export default function OrderSuccessPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                         href="/profile"
-                        className="flex-1 py-3.5 border-2 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 py-3.5 border-2 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2"
                     >
                         <Package className="w-5 h-5" /> View Order
                     </Link>
                     <Link
                         href="/"
-                        className="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-md shadow-primary/20 hover:shadow-lg flex items-center justify-center gap-2"
+                        className="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold transition-all shadow-md shadow-primary/20 hover:shadow-lg flex items-center justify-center gap-2"
                     >
                         <Home className="w-5 h-5" /> Back Home
                     </Link>

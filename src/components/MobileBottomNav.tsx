@@ -169,6 +169,10 @@ export function MobileBottomNav() {
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={() => {
+                    setIsAuthModalOpen(false);
+                    router.push("/profile");
+                }}
             />
         </>
     );
