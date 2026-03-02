@@ -82,7 +82,7 @@ export default function ReviewOrderPage() {
     };
 
     return (
-        <div className="bg-zinc-50 dark:bg-black min-h-screen pb-32">
+        <div className="bg-zinc-50 dark:bg-black min-h-screen pb-48 md:pb-32">
             <header className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-30 pt-16 pb-4 px-4 shadow-sm">
                 <div className="container mx-auto max-w-2xl flex items-center justify-between">
                     <Link href="/checkout/delivery" className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
@@ -94,6 +94,18 @@ export default function ReviewOrderPage() {
             </header>
 
             <main className="container mx-auto max-w-2xl px-4 mt-8 space-y-6">
+                {/* Payment Notice (COD) */}
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 p-4 rounded-2xl flex gap-3 items-start">
+                    <div className="bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
+                        <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-emerald-800 dark:text-emerald-300">Cash on Delivery</h4>
+                        <p className="text-sm text-emerald-700 dark:text-emerald-400/80">
+                            No online payment needed. Pay directly when you receive your order.
+                        </p>
+                    </div>
+                </div>
 
                 {/* Order Items */}
                 <section className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-100 dark:border-zinc-800">
@@ -139,7 +151,7 @@ export default function ReviewOrderPage() {
                         </div>
                         <div className="w-full h-px bg-zinc-100 dark:bg-zinc-800 my-2" />
                         <div className="flex justify-between font-bold text-lg">
-                            <span>Total to Pay</span>
+                            <span>Total Bill (COD)</span>
                             <span className="text-primary">₹{total}</span>
                         </div>
                     </div>
@@ -154,22 +166,25 @@ export default function ReviewOrderPage() {
             </main>
 
             {/* Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 p-4 z-50">
+            <div className="fixed bottom-20 md:bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 p-4 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
                 <div className="container mx-auto max-w-2xl flex items-center justify-between gap-4">
                     <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total</span>
-                        <span className="text-xl font-bold">₹{total}</span>
+                        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Amount to Pay</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-primary">₹{total}</span>
+                            <span className="text-[10px] text-zinc-400 font-medium">COD</span>
+                        </div>
                     </div>
                     <button
                         onClick={handlePlaceOrder}
                         disabled={isProcessing}
-                        className="flex-grow max-w-xs bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold text-lg transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="flex-grow max-w-[200px] bg-primary hover:bg-primary-dark text-white rounded-2xl py-4 font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
                     >
                         {isProcessing ? (
                             <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                             <>
-                                Confirm & Pay <CheckCircle className="w-5 h-5" />
+                                Place Order <CheckCircle className="w-5 h-5" />
                             </>
                         )}
                     </button>

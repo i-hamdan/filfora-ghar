@@ -27,7 +27,7 @@ export function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
 
-    if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout')) {
+    if (pathname?.startsWith('/admin')) {
         return null;
     }
 
