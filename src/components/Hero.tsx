@@ -1,9 +1,22 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import { siteConfig } from "@/lib/config";
+import { useCartStore } from "@/store/useCartStore";
+import { useEffect, useState } from "react";
 
 export function Hero() {
+    const { items } = useCartStore();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
     // Customize logo dimensions and appearance
     const HERO_LOGO_WIDTH = 280;
     const HERO_LOGO_HEIGHT = 80;
@@ -85,13 +98,24 @@ export function Hero() {
                     Experience the warmth of home-cooked meals by Chef Asif Rasheed.
                     Rich flavors, premium ingredients, and a taste you will never forget.
                 </p>
-                <Link
-                    href="#menu"
-                    className="group flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-full font-medium transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
-                >
-                    Explore Menu
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <Link
+                        href="#menu"
+                        className="group flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-full font-medium transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+                    >
+                        Explore Menu
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    {mounted && cartCount > 0 && (
+                        <Link
+                            href="/cart"
+                            className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-full font-medium transition-all transform hover:scale-105"
+                        >
+                            <ShoppingBag className="w-5 h-5" />
+                            Resume Checkout ({cartCount})
+                        </Link>
+                    )}
+                </div>
             </div>
         </section>
     );

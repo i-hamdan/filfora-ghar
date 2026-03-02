@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { AuthModal } from "@/components/AuthModal";
 
 export default function CartPage() {
-    const { items, updateQuantity, removeItem } = useCartStore();
+    const { items, updateQuantity, removeItem, clearCart } = useCartStore();
     const { isAuthenticated } = useAuthStore();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
@@ -42,6 +42,16 @@ export default function CartPage() {
                         <ShoppingBag className="w-6 h-6 text-primary" />
                         Your Cart
                     </h1>
+                    {items.length > 0 && (
+                        <button
+                            onClick={() => {
+                                if (confirm("Are you sure you want to clear your cart?")) clearCart();
+                            }}
+                            className="text-sm font-medium text-zinc-500 hover:text-red-500 flex items-center gap-1.5 transition-colors"
+                        >
+                            <Trash2 className="w-4 h-4" /> Clear Cart
+                        </button>
+                    )}
                 </div>
             </div>
 

@@ -52,10 +52,7 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
         if (item) {
             onAddToCart(item, quantity);
             setIsAdded(true);
-            setTimeout(() => {
-                setIsAdded(false);
-                onClose();
-            }, 800);
+            // We no longer close automatically after 800ms
         }
     };
 
@@ -128,55 +125,65 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
                                 <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed mb-8">
                                     {item.description}
                                 </p>
-
-                                {/* Could add ingredients list or allergens here if needed later */}
                             </div>
 
                             {/* Sticky Footer for Action */}
-                            <div className="p-6 bg-zinc-50 dark:bg-zinc-900/90 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4 flex-shrink-0 backdrop-blur-md">
-
-                                {/* Quantity Selector */}
-                                <div className="flex items-center justify-between w-full sm:w-auto bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-1 shadow-sm">
-                                    <button
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="p-3 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors disabled:opacity-50"
-                                        disabled={quantity <= 1}
+                            <div className="p-6 bg-zinc-50 dark:bg-zinc-900/90 border-t border-zinc-100 dark:border-zinc-800 flex flex-col items-center gap-4 flex-shrink-0 backdrop-blur-md">
+                                {isAdded ? (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="w-full space-y-3"
                                     >
-                                        <Minus className="w-5 h-5" />
-                                    </button>
-                                    <span className="w-12 text-center font-semibold text-lg">
-                                        {quantity}
-                                    </span>
-                                    <button
-                                        onClick={() => setQuantity(quantity + 1)}
-                                        className="p-3 text-zinc-500 hover:text-primary dark:text-zinc-400 transition-colors"
-                                    >
-                                        <Plus className="w-5 h-5" />
-                                    </button>
-                                </div>
+                                        <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-bold mb-2">
+                                            <Check className="w-6 h-6" /> Item added to cart!
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    onClose();
+                                                    window.location.href = '/cart';
+                                                }}
+                                                className="flex-1 bg-primary hover:bg-primary-dark text-white py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                Checkout Now <ShoppingBag className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={onClose}
+                                                className="flex-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 py-4 rounded-2xl font-bold transition-all"
+                                            >
+                                                Add More Items
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                                        {/* Quantity Selector */}
+                                        <div className="flex items-center justify-between w-full sm:w-auto bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-1 shadow-sm">
+                                            <button
+                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                className="p-3 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors disabled:opacity-50"
+                                                disabled={quantity <= 1}
+                                            >
+                                                <Minus className="w-5 h-5" />
+                                            </button>
+                                            <span className="w-12 text-center font-semibold text-lg">
+                                                {quantity}
+                                            </span>
+                                            <button
+                                                onClick={() => setQuantity(quantity + 1)}
+                                                className="p-3 text-zinc-500 hover:text-primary dark:text-zinc-400 transition-colors"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                            </button>
+                                        </div>
 
-                                {/* Add to Cart Button */}
-                                <motion.button
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={handleAddToCart}
-                                    disabled={isAdded}
-                                    className={cn(
-                                        "w-full flex items-center justify-between px-6 py-4 rounded-2xl font-semibold transition-all relative overflow-hidden",
-                                        isAdded
-                                            ? "bg-green-500 hover:bg-green-600 text-white shadow-lg"
-                                            : "bg-primary hover:bg-primary-dark text-white shadow-[0_4_14_0_rgba(249,115,22,0.39)] hover:shadow-[0_6_20_rgba(249,115,22,0.23)] hover:-translate-y-0.5"
-                                    )}
-                                >
-                                    {isAdded ? (
-                                        <motion.div
-                                            initial={{ scale: 0, rotate: -45 }}
-                                            animate={{ scale: 1, rotate: 0 }}
-                                            className="flex items-center justify-center w-full gap-2 text-lg"
+                                        {/* Add to Cart Button */}
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={handleAddToCart}
+                                            className="w-full flex items-center justify-between px-6 py-4 rounded-2xl font-semibold bg-primary hover:bg-primary-dark text-white shadow-[0_4_14_0_rgba(249,115,22,0.39)] hover:shadow-[0_6_20_rgba(249,115,22,0.23)] hover:-translate-y-0.5 transition-all"
                                         >
-                                            <Check className="w-6 h-6" /> Added to Cart!
-                                        </motion.div>
-                                    ) : (
-                                        <>
                                             <span className="flex items-center gap-2">
                                                 <ShoppingBag className="w-5 h-5" />
                                                 Add item
@@ -184,11 +191,10 @@ export function ItemDetailsModal({ isOpen, onClose, item, onAddToCart }: ItemDet
                                             <span>
                                                 ₹{item.price * quantity}
                                             </span>
-                                        </>
-                                    )}
-                                </motion.button>
+                                        </motion.button>
+                                    </div>
+                                )}
                             </div>
-
                         </motion.div>
                     </div>
                 </>

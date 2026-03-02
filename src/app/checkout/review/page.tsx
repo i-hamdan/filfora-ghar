@@ -97,9 +97,14 @@ export default function ReviewOrderPage() {
 
                 {/* Order Items */}
                 <section className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-100 dark:border-zinc-800">
-                    <div className="flex items-center gap-2 mb-6 border-b border-zinc-100 dark:border-zinc-800 pb-4">
-                        <Receipt className="w-5 h-5 text-primary" />
-                        <h2 className="text-xl font-bold">Order Summary</h2>
+                    <div className="flex items-center justify-between mb-6 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                        <div className="flex items-center gap-2">
+                            <Receipt className="w-5 h-5 text-primary" />
+                            <h2 className="text-xl font-bold">Order Summary</h2>
+                        </div>
+                        <Link href="/cart" className="text-sm font-bold text-primary hover:underline">
+                            Edit
+                        </Link>
                     </div>
 
                     <div className="space-y-4">

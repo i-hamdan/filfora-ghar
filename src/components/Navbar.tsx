@@ -75,16 +75,16 @@ export function Navbar() {
                     <div className="flex items-center gap-2 sm:gap-4">
                         <ThemeToggle />
 
-                        <div className="hidden md:flex items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             {/* Cart Button */}
                             <button
                                 onClick={() => router.push('/cart')}
                                 className="relative p-2 sm:p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all hover:scale-105 active:scale-95"
                                 aria-label="Open Cart"
                             >
-                                <ShoppingCart className="w-5 h-5 sm:w-5 sm:h-5" />
+                                <ShoppingCart className="w-5 h-5" />
                                 {cartItemsCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-background">
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-zinc-950">
                                         {cartItemsCount}
                                     </span>
                                 )}

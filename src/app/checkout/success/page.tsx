@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Home, Package, MessageCircle } from "lucide-react";
+import { CheckCircle2, Home, Package, MessageCircle, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -44,13 +44,13 @@ export default function OrderSuccessPage() {
                         href="/profile"
                         className="flex-1 py-3.5 border-2 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2"
                     >
-                        <Package className="w-5 h-5" /> View Order
+                        <Package className="w-5 h-5" /> Track Order
                     </Link>
                     <Link
                         href="/"
                         className="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold transition-all shadow-md shadow-primary/20 hover:shadow-lg flex items-center justify-center gap-2"
                     >
-                        <Home className="w-5 h-5" /> Back Home
+                        <ShoppingBag className="w-5 h-5" /> Browse Menu
                     </Link>
                 </div>
             </motion.div>
