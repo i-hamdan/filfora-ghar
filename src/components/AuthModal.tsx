@@ -32,15 +32,26 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setIsLoading(true);
 
         try {
+            console.log("Attempting to send OTP to:", `+91${phone}`);
             const { data, error: fnError } = await supabase.functions.invoke('send-whatsapp-otp', {
                 body: { phone: `+91${phone}` }
             });
-            if (fnError) throw fnError;
-            if (data?.error) throw new Error(data.error);
 
+            if (fnError) {
+                console.error("Supabase function error:", fnError);
+                throw new Error(`Connection error: ${fnError.message || 'Unknown error'}`);
+            }
+
+            if (data?.error) {
+                console.error("Function business logic error:", data.error);
+                throw new Error(data.error);
+            }
+
+            console.log("OTP sent successfully");
             setStep("otp");
         } catch (err: any) {
-            setError(err.message || "Failed to send OTP. Try again.");
+            console.error("Full catch error in handleSendOtp:", err);
+            setError(err.message || "Failed to send OTP. Please check your internet connection.");
         } finally {
             setIsLoading(false);
         }
