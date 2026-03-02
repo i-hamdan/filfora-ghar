@@ -32,22 +32,21 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setIsLoading(true);
 
         try {
-            console.log("Attempting to send OTP to:", `+91${phone}`);
-            const { data, error: fnError } = await supabase.functions.invoke('send-whatsapp-otp', {
-                body: { phone: `+91${phone}` }
+            console.log("Attempting to send OTP via proxy for:", `+91${phone}`);
+            const response = await fetch('/api/auth/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: `+91${phone}`, action: 'send' })
             });
 
-            if (fnError) {
-                console.error("Supabase function error:", fnError);
-                throw new Error(`Connection error: ${fnError.message || 'Unknown error'}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Proxy error:", data);
+                throw new Error(data.error || "Failed to send OTP. Please check your connection.");
             }
 
-            if (data?.error) {
-                console.error("Function business logic error:", data.error);
-                throw new Error(data.error);
-            }
-
-            console.log("OTP sent successfully");
+            console.log("OTP sent successfully via proxy");
             setStep("otp");
         } catch (err: any) {
             console.error("Full catch error in handleSendOtp:", err);
@@ -68,16 +67,19 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
         try {
             const fullPhone = `+91${phone}`;
-            const { data, error: fnError } = await supabase.functions.invoke('verify-whatsapp-otp', {
-                body: { phone: fullPhone, otp, name: "" }
+            console.log("Attempting to verify OTP via proxy for:", fullPhone);
+            const response = await fetch('/api/auth/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhone, otp, action: 'verify' })
             });
 
-            if (fnError) {
-                // Handle case where function returns a non-2xx status code directly
-                const errorData = await fnError.context?.json?.().catch(() => null);
-                throw new Error(errorData?.error || "OTP verification failed. Please try again.");
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Proxy verify error:", data);
+                throw new Error(data.error || "OTP verification failed. Please try again.");
             }
-            if (data?.error) throw new Error(data.error);
 
             const authEmail = `91${phone}@filforaghar.com`;
             const { error: signInError } = await supabase.auth.signInWithPassword({
