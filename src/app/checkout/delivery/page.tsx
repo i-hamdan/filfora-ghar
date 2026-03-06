@@ -2,6 +2,7 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
+
 import { ChevronLeft, Calendar as CalendarIcon, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,7 +24,7 @@ const getUpcomingDates = (daysCount = 7) => {
 
 export default function DeliveryPage() {
     const router = useRouter();
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated, isAuthReady } = useAuthStore();
     const { items, setCheckoutDetails } = useCartStore();
     const [mounted, setMounted] = useState(false);
 
@@ -34,6 +35,7 @@ export default function DeliveryPage() {
     const [addresses, setAddresses] = useState<any[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new");
     const [isFetchingAddresses, setIsFetchingAddresses] = useState(true);
+    const [addressFetchError, setAddressFetchError] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     // New Address Form State
@@ -50,24 +52,38 @@ export default function DeliveryPage() {
     }, []);
 
     useEffect(() => {
-        if (mounted && (!isAuthenticated || items.length === 0)) {
+        if (mounted && isAuthReady && (!isAuthenticated || items.length === 0)) {
             router.push("/");
-        } else if (mounted && user) {
+        } else if (mounted && isAuthReady && user) {
             fetchAddresses();
         }
-    }, [mounted, isAuthenticated, items.length, user, router]);
+    }, [mounted, isAuthenticated, isAuthReady, items.length, user, router]);
 
     const fetchAddresses = async () => {
         setIsFetchingAddresses(true);
-        const { data } = await supabase.from('addresses').select('*').eq('user_id', user!.id).order('is_default', { ascending: false }).order('created_at', { ascending: false });
-        if (data && data.length > 0) {
-            setAddresses(data);
-            // Auto-select the default or first address
-            setSelectedAddressId(data[0].id);
-        } else {
+        setAddressFetchError(false);
+        try {
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("Address fetch timed out")), 8000)
+            );
+            const fetchPromise = Promise.resolve(
+                supabase.from('addresses').select('*').eq('user_id', user!.id).order('is_default', { ascending: false }).order('created_at', { ascending: false })
+            );
+            const { data } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+            if (data && data.length > 0) {
+                setAddresses(data);
+                // Auto-select the default or first address
+                setSelectedAddressId(data[0].id);
+            } else {
+                setSelectedAddressId("new");
+            }
+        } catch (err) {
+            console.error("Failed to fetch addresses:", err);
+            setAddressFetchError(true);
             setSelectedAddressId("new");
+        } finally {
+            setIsFetchingAddresses(false);
         }
-        setIsFetchingAddresses(false);
     };
 
     const handleContinue = async () => {
@@ -104,7 +120,7 @@ export default function DeliveryPage() {
         }
     };
 
-    if (!mounted || !isAuthenticated || items.length === 0) return null;
+    if (!mounted || !isAuthReady || !isAuthenticated || items.length === 0) return null;
 
     return (
         <div className="bg-zinc-50 dark:bg-black min-h-screen pb-48 md:pb-32">
@@ -170,6 +186,11 @@ export default function DeliveryPage() {
                     {isFetchingAddresses ? (
                         <div className="flex justify-center py-8">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                    ) : addressFetchError ? (
+                        <div className="text-center py-8 space-y-3">
+                            <p className="text-sm text-red-500 font-medium">Failed to load addresses.</p>
+                            <button onClick={fetchAddresses} className="text-sm font-bold text-primary hover:underline">Try Again</button>
                         </div>
                     ) : (
                         <div className="space-y-4">

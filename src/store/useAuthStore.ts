@@ -11,7 +11,9 @@ export interface UserProfile {
 interface AuthState {
     user: UserProfile | null;
     isAuthenticated: boolean;
+    isAuthReady: boolean;
     setUser: (user: UserProfile | null) => void;
+    setAuthReady: (ready: boolean) => void;
     logout: () => void;
 }
 
@@ -20,7 +22,9 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
+            isAuthReady: false,
             setUser: (user) => set({ user, isAuthenticated: !!user }),
+            setAuthReady: (ready) => set({ isAuthReady: ready }),
             logout: () => {
                 supabase.auth.signOut();
                 set({ user: null, isAuthenticated: false });
@@ -28,6 +32,10 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: "filfora-auth",
+            partialize: (state) => ({
+                user: state.user,
+                isAuthenticated: state.isAuthenticated,
+            }),
         }
     )
 );

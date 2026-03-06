@@ -75,6 +75,15 @@ export function Hero() {
                 <span className={`font-semibold tracking-wider uppercase text-sm mb-4 drop-shadow-md ${dynamicTextColor}`}>
                     Authentic Home Kitchen
                 </span>
+                <div className="mb-6">
+                    <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white text-sm font-semibold shadow-lg">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </span>
+                        Now delivering in Bhopal
+                    </span>
+                </div>
                 {siteConfig.USE_IMAGE_LOGO_IN_HERO ? (
                     <div className="flex flex-col items-center mb-6">
                         <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight drop-shadow-lg">

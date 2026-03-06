@@ -11,7 +11,7 @@ import Image from "next/image";
 
 export default function ReviewOrderPage() {
     const router = useRouter();
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated, isAuthReady } = useAuthStore();
     const { items, checkoutDetails, clearCart } = useCartStore();
     const [mounted, setMounted] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -21,12 +21,12 @@ export default function ReviewOrderPage() {
     }, []);
 
     useEffect(() => {
-        if (mounted && (!isAuthenticated || items.length === 0)) {
+        if (mounted && isAuthReady && (!isAuthenticated || items.length === 0)) {
             router.push("/");
         }
-    }, [mounted, isAuthenticated, items.length, router]);
+    }, [mounted, isAuthReady, isAuthenticated, items.length, router]);
 
-    if (!mounted || !isAuthenticated || items.length === 0) return null;
+    if (!mounted || !isAuthReady || !isAuthenticated || items.length === 0) return null;
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = 50;

@@ -31,10 +31,17 @@ export function MenuFeed() {
             try {
                 setIsLoading(true);
                 setError(null);
-                const [catsRes, itemsRes] = await Promise.all([
+
+                const timeoutPromise = new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error("Menu fetch timed out")), 10000)
+                );
+
+                const fetchPromise = Promise.all([
                     supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
                     supabase.from('menu_items').select('*, categories(name)').eq('is_available', true).order('sort_order', { ascending: true })
                 ]);
+
+                const [catsRes, itemsRes] = await Promise.race([fetchPromise, timeoutPromise]);
 
                 if (catsRes.error) throw catsRes.error;
                 if (itemsRes.error) throw itemsRes.error;

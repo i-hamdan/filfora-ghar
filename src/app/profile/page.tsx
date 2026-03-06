@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
-    const { user, isAuthenticated, logout } = useAuthStore();
+    const { user, isAuthenticated, isAuthReady, logout } = useAuthStore();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
@@ -109,12 +109,12 @@ export default function ProfilePage() {
     }, []);
 
     useEffect(() => {
-        if (mounted && !isAuthenticated) {
+        if (mounted && isAuthReady && !isAuthenticated) {
             router.push("/");
         }
-    }, [mounted, isAuthenticated, router]);
+    }, [mounted, isAuthReady, isAuthenticated, router]);
 
-    if (!mounted || !user) {
+    if (!mounted || !isAuthReady || !user) {
         return (
             <div className="min-h-[80vh] flex items-center justify-center">
                 <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
